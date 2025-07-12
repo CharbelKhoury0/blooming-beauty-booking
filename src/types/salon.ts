@@ -48,6 +48,7 @@ export interface Testimonial {
   author_name: string;
   text: string;
   rating: number;
+  serviceName?: string; // Added serviceName property
   created_at: string;
   updated_at: string;
 }

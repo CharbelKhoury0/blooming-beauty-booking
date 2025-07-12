@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 import { ServiceCard } from '@/components/cards/ServiceCard';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 // CMS-ready service data structure
 export interface Service {
@@ -74,7 +76,7 @@ interface ServicesSectionProps {
 
 export const ServicesSection = ({ services = [], onBookingClick }: ServicesSectionProps) => {
   // Use provided services or fallback to default
-  const displayServices = services.length > 0 ? services : [
+  const displayServices = (services.length > 0 ? services : [
     {
       id: '1',
       name: 'Hair Styling & Cut',
@@ -91,7 +93,28 @@ export const ServicesSection = ({ services = [], onBookingClick }: ServicesSecti
       duration: '2-4 hours',
       popular: true,
     },
-    // ... keep existing fallback services
+    {
+      id: '3',
+      name: 'Facial Treatments',
+      description: 'Rejuvenating facials using premium skincare products for glowing, healthy skin.',
+      price: 'From $95',
+      duration: '60-75 min',
+    },
+    {
+      id: '4',
+      name: 'Bridal Package',
+      description: 'Complete bridal beauty package including hair, makeup, and trial sessions.',
+      price: 'From $350',
+      duration: '4-6 hours',
+    },
+    {
+      id: '5',
+      name: 'Spa Treatments',
+      description: 'Relaxing massage, body treatments, and wellness services for total rejuvenation.',
+      price: 'From $110',
+      duration: '60-90 min',
+    },
+  ]).slice(0, 3);
   ];
   return (
     <section id="services" className="py-20 bg-gradient-to-b from-background to-muted/30">
@@ -133,6 +156,21 @@ export const ServicesSection = ({ services = [], onBookingClick }: ServicesSecti
             </motion.div>
           ))}
         </div>
+
+        {/* See More Services Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mt-12"
+        >
+          <Link to="/services">
+            <Button variant="outline-luxury" size="lg">
+              See More Services
+            </Button>
+          </Link>
+        </motion.div>
 
         {/* CTA Section */}
         <motion.div

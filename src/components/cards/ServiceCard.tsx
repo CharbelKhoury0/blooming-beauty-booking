@@ -31,8 +31,12 @@ export const ServiceCard = ({ service, onBookingClick }: ServiceCardProps) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-            <span className="text-2xl">{getServiceIcon(service.name)}</span>
+          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center overflow-hidden">
+            {service.image_url ? (
+              <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-2xl">{getServiceIcon(service.name)}</span>
+            )}
           </div>
           <div>
             <h3 className="font-heading text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
