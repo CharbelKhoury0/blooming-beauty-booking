@@ -1,12 +1,44 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Navbar } from '@/components/layout/Navbar';
+import { HeroSection } from '@/components/sections/HeroSection';
+import { ServicesSection } from '@/components/sections/ServicesSection';
+import { AboutSection } from '@/components/sections/AboutSection';
+import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
+import { Footer } from '@/components/layout/Footer';
+import { BookingModal } from '@/components/booking/BookingModal';
 
 const Index = () => {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Navbar onBookingClick={() => handleBookingClick()} />
+      
+      <main>
+        <HeroSection onBookingClick={() => handleBookingClick()} />
+        <ServicesSection />
+        <AboutSection />
+        <TestimonialsSection />
+      </main>
+      
+      <Footer onBookingClick={() => handleBookingClick()} />
+      
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+      />
     </div>
   );
 };
