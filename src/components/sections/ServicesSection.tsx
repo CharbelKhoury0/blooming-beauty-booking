@@ -72,9 +72,10 @@ const services: Service[] = [
 interface ServicesSectionProps {
   services?: any[];
   onBookingClick?: (serviceId?: string) => void;
+  slug?: string;
 }
 
-export const ServicesSection = ({ services = [], onBookingClick }: ServicesSectionProps) => {
+export const ServicesSection = ({ services = [], onBookingClick, slug }: ServicesSectionProps) => {
   // Use provided services or fallback to default
   const displayServices = (services.length > 0 ? services : [
     {
@@ -115,7 +116,6 @@ export const ServicesSection = ({ services = [], onBookingClick }: ServicesSecti
       duration: '60-90 min',
     },
   ]).slice(0, 3);
-  ];
   return (
     <section id="services" className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4">
@@ -165,7 +165,7 @@ export const ServicesSection = ({ services = [], onBookingClick }: ServicesSecti
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-          <Link to="/services">
+          <Link to={slug ? `/${slug}/services` : '/services'}>
             <Button variant="outline-luxury" size="lg">
               See More Services
             </Button>
@@ -188,9 +188,11 @@ export const ServicesSection = ({ services = [], onBookingClick }: ServicesSecti
               We offer customized beauty solutions. Contact us to discuss your specific needs 
               and create a personalized treatment plan.
             </p>
-            <button className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors">
-              Contact Us
-            </button>
+            <Link to={slug ? `/${slug}/contact` : '/contact'}>
+              <button className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors">
+                Contact Us
+              </button>
+            </Link>
           </div>
         </motion.div>
       </div>

@@ -96,7 +96,7 @@ const SalonPage = () => {
       <Navbar 
         salonName={salon.name}
         slug={salon.slug}
-        onBookingClick={() => handleBookingClick()} 
+        onBookingClick={() => handleBookingClick()}
       />
       
       <main>
@@ -107,6 +107,7 @@ const SalonPage = () => {
         <ServicesSection 
           services={services}
           onBookingClick={handleBookingClick}
+          slug={salon.slug}
         />
         <AboutSection salon={salon} />
         <TestimonialsSection testimonials={testimonials} />

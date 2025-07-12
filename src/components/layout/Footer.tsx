@@ -43,12 +43,12 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
   ];
 
   const quickLinks = [
-    { label: 'About Us', href: '#about' },
-    { label: 'Services', href: '#services' },
-    { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
+    { label: 'About Us', href: salon?.slug ? `/${salon.slug}/about` : '/about' },
+    { label: 'Services', href: salon?.slug ? `/${salon.slug}/services` : '/services' },
+    { label: 'Testimonials', href: salon?.slug ? `/${salon.slug}/testimonials` : '/testimonials' },
+    { label: 'Contact', href: salon?.slug ? `/${salon.slug}/contact` : '/contact' },
+    { label: 'Privacy Policy', href: salon?.slug ? `/${salon.slug}/privacy-policy` : '/privacy-policy' },
+    { label: 'Terms of Service', href: salon?.slug ? `/${salon.slug}/terms-of-service` : '/terms-of-service' },
   ];
 
   const socialLinks = [
@@ -107,28 +107,12 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
               <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.label}>
-                    {link.label === 'Contact' ? (
-                      <Link
-                        to={link.href}
-                        className="text-white/80 hover:text-primary transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    ) : (
-                      <a
-                        href={link.href}
-                        className="text-white/80 hover:text-primary transition-colors"
-                        onClick={(e) => {
-                          if (link.href.startsWith('#')) {
-                            e.preventDefault();
-                            const element = document.querySelector(link.href);
-                            element?.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                      >
-                        {link.label}
-                      </a>
-                    )}
+                    <Link
+                      to={link.href}
+                      className="text-white/80 hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -144,8 +128,13 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
               <h3 className="font-heading text-lg font-semibold mb-6">Our Services</h3>
               <ul className="space-y-3">
                 {services.map((service) => (
-                  <li key={service} className="text-white/80">
-                    {service}
+                  <li key={service}>
+                    <Link
+                      to={salon?.slug ? `/${salon.slug}/services` : '/services'}
+                      className="text-white/80 hover:text-primary transition-colors"
+                    >
+                      {service}
+                    </Link>
                   </li>
                 ))}
               </ul>

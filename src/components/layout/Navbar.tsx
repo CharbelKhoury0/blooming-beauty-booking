@@ -8,9 +8,10 @@ interface NavbarProps {
   onBookingClick: () => void;
   salonName?: string;
   slug?: string;
+  alwaysTransparent?: boolean;
 }
 
-export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug }: NavbarProps) => {
+export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug, alwaysTransparent = false }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -37,9 +38,11 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug }: Nav
   return (
     <motion.nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-soft' 
-          : 'bg-transparent'
+        alwaysTransparent
+          ? 'bg-transparent'
+          : isScrolled 
+            ? 'bg-white/95 backdrop-blur-md shadow-soft' 
+            : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -48,15 +51,17 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug }: Nav
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <motion.div
-            className="flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-          >
-            <div className="w-8 h-8 bg-gradient-primary rounded-full"></div>
-            <span className="font-heading text-xl md:text-2xl font-semibold text-foreground">
-              {salonName}
-            </span>
-          </motion.div>
+          <Link to={slug ? `/${slug}` : '/'}>
+            <motion.div
+              className="flex items-center space-x-2 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="w-8 h-8 bg-gradient-primary rounded-full"></div>
+              <span className="font-heading text-xl md:text-2xl font-semibold text-foreground">
+                {salonName}
+              </span>
+            </motion.div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">

@@ -55,9 +55,14 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-primary/10 to-background">
+        <div className="mt-24"></div>
         <div className="container px-4 md:px-6">
-          <div className="text-center mb-12">
+          <div className="max-w-2xl mx-auto bg-card shadow-2xl rounded-2xl p-10 mb-12 border border-border text-center">
+            <div className="inline-flex items-center space-x-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
+              <Mail className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-primary">Contact Us</span>
+            </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 text-foreground">Contact Us</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
@@ -65,15 +70,15 @@ export default function Contact() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
             {/* Contact Form Card */}
-            <Card className="p-6 md:p-8 shadow-md border-border">
+            <Card className="p-10 shadow-2xl border-border rounded-2xl">
               <div className="mb-6">
-                <h2 className="text-2xl font-semibold mb-2">Send Us a Message</h2>
+                <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" /> Send Us a Message</h2>
                 <p className="text-muted-foreground">
                   Fill out the form below and we'll get back to you soon.
                 </p>
               </div>
               {submitted ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-muted rounded-xl shadow-inner">
                   <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
                   <h3 className="text-xl font-medium mb-2">Thank You!</h3>
                   <p className="text-muted-foreground">
@@ -147,9 +152,9 @@ export default function Contact() {
               )}
             </Card>
             {/* Salon Information Card */}
-            <Card className="p-6 md:p-8 shadow-md border-border flex flex-col">
+            <Card className="p-10 shadow-2xl border-border rounded-2xl flex flex-col">
               <div className="mb-6">
-                <h2 className="text-2xl font-semibold mb-2">{salon.name}</h2>
+                <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2"><MapPin className="w-5 h-5 text-primary" /> {salon.name}</h2>
                 <p className="text-muted-foreground">
                   Visit our salon or reach out through any of these channels.
                 </p>
@@ -205,8 +210,8 @@ export default function Contact() {
                 </div>
               </div>
               <div className="mt-8 pt-6 border-t border-border">
-                <h3 className="font-medium mb-4">Find Us On The Map</h3>
-                <div className="bg-muted rounded-md h-[200px] flex items-center justify-center">
+                <h3 className="font-medium mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Find Us On The Map</h3>
+                <div className="bg-muted rounded-md h-[200px] flex items-center justify-center border border-border shadow-inner">
                   <p className="text-muted-foreground text-sm">
                     Map placeholder - Google Maps or other map service would be integrated here
                   </p>
