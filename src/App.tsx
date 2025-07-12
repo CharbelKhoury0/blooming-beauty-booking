@@ -10,6 +10,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import Contact from "./pages/Contact";
+import Services from "./pages/Services";
+import About from "./pages/About";
+import Testimonials from "./pages/Testimonials";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,9 @@ const App = () => (
           <Route path=":slug/terms-of-service" element={<TermsOfService />} />
           <Route path=":slug/cancellation-policy" element={<CancellationPolicy />} />
           <Route path=":slug/contact" element={<Contact />} />
+          <Route path=":slug/services" element={<Services />} />
+          <Route path=":slug/about" element={<About />} />
+          <Route path=":slug/testimonials" element={<Testimonials />} />
           <Route path=":slug" element={<SalonPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
