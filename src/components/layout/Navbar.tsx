@@ -5,9 +5,10 @@ import { Calendar, Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   onBookingClick: () => void;
+  salonName?: string;
 }
 
-export const Navbar = ({ onBookingClick }: NavbarProps) => {
+export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty" }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -48,7 +49,7 @@ export const Navbar = ({ onBookingClick }: NavbarProps) => {
           >
             <div className="w-8 h-8 bg-gradient-primary rounded-full"></div>
             <span className="font-heading text-xl md:text-2xl font-semibold text-foreground">
-              Bloom Beauty
+              {salonName}
             </span>
           </motion.div>
 

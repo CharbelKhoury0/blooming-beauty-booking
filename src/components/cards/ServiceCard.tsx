@@ -5,12 +5,21 @@ import { Clock, Star } from 'lucide-react';
 import type { Service } from '@/components/sections/ServicesSection';
 
 interface ServiceCardProps {
-  service: Service;
-  onBookingClick?: (serviceId: string) => void;
+  service: any;
+  onBookingClick?: (serviceId?: string) => void;
 }
 
 export const ServiceCard = ({ service, onBookingClick }: ServiceCardProps) => {
-  const Icon = service.icon;
+  // Fallback icons for services without specific icons
+  const getServiceIcon = (serviceName: string) => {
+    if (serviceName.toLowerCase().includes('hair') && serviceName.toLowerCase().includes('cut')) return '✂️';
+    if (serviceName.toLowerCase().includes('color')) return '🎨';
+    if (serviceName.toLowerCase().includes('facial')) return '✨';
+    if (serviceName.toLowerCase().includes('bridal')) return '👰';
+    if (serviceName.toLowerCase().includes('spa')) return '💆';
+    if (serviceName.toLowerCase().includes('express')) return '⚡';
+    return '💅';
+  };
 
   return (
     <motion.div
@@ -23,7 +32,7 @@ export const ServiceCard = ({ service, onBookingClick }: ServiceCardProps) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-            <Icon className="w-6 h-6 text-white" />
+            <span className="text-2xl">{getServiceIcon(service.name)}</span>
           </div>
           <div>
             <h3 className="font-heading text-lg font-semibold text-foreground group-hover:text-primary transition-colors">

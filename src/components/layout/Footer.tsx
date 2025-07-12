@@ -14,16 +14,17 @@ import {
 
 interface FooterProps {
   onBookingClick: () => void;
+  salon?: any;
 }
 
-export const Footer = ({ onBookingClick }: FooterProps) => {
+export const Footer = ({ onBookingClick, salon }: FooterProps) => {
   const currentYear = new Date().getFullYear();
 
-  // CMS-ready contact data structure
+  // Use salon data or fallback
   const contactInfo = {
-    address: '123 Beauty Street, Downtown, City 12345',
-    phone: '(555) 123-4567',
-    email: 'hello@bloombeauty.com',
+    address: salon?.address || '123 Beauty Street, Downtown, City 12345',
+    phone: salon?.phone || '(555) 123-4567',
+    email: salon?.booking_email || 'hello@bloombeauty.com',
     hours: {
       weekdays: 'Mon-Fri: 9:00 AM - 7:00 PM',
       saturday: 'Saturday: 9:00 AM - 6:00 PM',
@@ -70,7 +71,7 @@ export const Footer = ({ onBookingClick }: FooterProps) => {
             >
               <div className="flex items-center space-x-2 mb-6">
                 <div className="w-8 h-8 bg-gradient-primary rounded-full"></div>
-                <span className="font-heading text-xl font-semibold">Bloom Beauty</span>
+                <span className="font-heading text-xl font-semibold">{salon?.name || "Bloom Beauty"}</span>
               </div>
               <p className="text-white/80 leading-relaxed mb-6">
                 Transform your look at our luxury beauty salon. Professional services 

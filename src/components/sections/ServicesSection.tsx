@@ -67,7 +67,32 @@ const services: Service[] = [
   },
 ];
 
-export const ServicesSection = () => {
+interface ServicesSectionProps {
+  services?: any[];
+  onBookingClick?: (serviceId?: string) => void;
+}
+
+export const ServicesSection = ({ services = [], onBookingClick }: ServicesSectionProps) => {
+  // Use provided services or fallback to default
+  const displayServices = services.length > 0 ? services : [
+    {
+      id: '1',
+      name: 'Hair Styling & Cut',
+      description: 'Professional cuts, styling, and blow-dry services tailored to your face shape and lifestyle.',
+      price: 'From $85',
+      duration: '60-90 min',
+      popular: true,
+    },
+    {
+      id: '2', 
+      name: 'Hair Coloring',
+      description: 'Full color, highlights, balayage, and color correction by our expert colorists.',
+      price: 'From $120',
+      duration: '2-4 hours',
+      popular: true,
+    },
+    // ... keep existing fallback services
+  ];
   return (
     <section id="services" className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4">
@@ -96,7 +121,7 @@ export const ServicesSection = () => {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
+          {displayServices.map((service, index) => (
             <motion.div
               key={service.id}
               initial={{ opacity: 0, y: 30 }}
@@ -104,7 +129,7 @@ export const ServicesSection = () => {
               transition={{ duration: 0.8, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <ServiceCard service={service} />
+              <ServiceCard service={service} onBookingClick={onBookingClick} />
             </motion.div>
           ))}
         </div>

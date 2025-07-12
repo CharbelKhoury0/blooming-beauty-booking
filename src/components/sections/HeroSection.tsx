@@ -5,9 +5,10 @@ import heroImage from '@/assets/hero-salon.jpg';
 
 interface HeroSectionProps {
   onBookingClick: () => void;
+  salon?: any;
 }
 
-export const HeroSection = ({ onBookingClick }: HeroSectionProps) => {
+export const HeroSection = ({ onBookingClick, salon }: HeroSectionProps) => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Image */}
@@ -48,7 +49,7 @@ export const HeroSection = ({ onBookingClick }: HeroSectionProps) => {
               className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold text-foreground leading-tight"
             >
               Transform Your Look at{' '}
-              <span className="gradient-text">Bloom Beauty</span>
+              <span className="gradient-text">{salon?.name || "Bloom Beauty"}</span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -58,8 +59,7 @@ export const HeroSection = ({ onBookingClick }: HeroSectionProps) => {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl"
             >
-              Experience luxury hair styling, beauty treatments, and spa services 
-              in our elegant salon. Where artistry meets relaxation.
+              {salon?.tagline || "Experience luxury hair styling, beauty treatments, and spa services in our elegant salon. Where artistry meets relaxation."}
             </motion.p>
 
             {/* CTA Buttons */}

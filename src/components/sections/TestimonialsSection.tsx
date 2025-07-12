@@ -57,15 +57,39 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-export const TestimonialsSection = () => {
+interface TestimonialsSectionProps {
+  testimonials?: any[];
+}
+
+export const TestimonialsSection = ({ testimonials = [] }: TestimonialsSectionProps) => {
+  // Use provided testimonials or fallback to default
+  const displayTestimonials = testimonials.length > 0 ? testimonials.map(t => ({
+    id: t.id,
+    name: t.author_name,
+    text: t.text,
+    rating: t.rating,
+    service: 'Beauty Services',
+    location: 'Valued Client',
+  })) : [
+    {
+      id: '1',
+      name: 'Sarah Johnson',
+      service: 'Hair Styling & Color',
+      rating: 5,
+      text: 'Absolutely amazing experience! The stylists at Bloom Beauty truly understand their craft. My hair has never looked better, and the salon atmosphere is so relaxing.',
+      location: 'Downtown Client',
+    },
+    // ... other fallback testimonials
+  ];
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    setCurrentIndex((prev) => (prev + 1) % displayTestimonials.length);
   };
 
   const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setCurrentIndex((prev) => (prev - 1 + displayTestimonials.length) % displayTestimonials.length);
   };
 
   return (
@@ -108,26 +132,26 @@ export const TestimonialsSection = () => {
               >
                 {/* Rating Stars */}
                 <div className="flex justify-center mb-6">
-                  {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                  {[...Array(displayTestimonials[currentIndex].rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-primary text-primary" />
                   ))}
                 </div>
 
                 {/* Quote */}
                 <blockquote className="text-lg md:text-xl text-foreground leading-relaxed mb-8 italic">
-                  "{testimonials[currentIndex].text}"
+                  "{displayTestimonials[currentIndex].text}"
                 </blockquote>
 
                 {/* Client Info */}
                 <div className="space-y-2">
                   <div className="font-heading text-xl font-semibold text-foreground">
-                    {testimonials[currentIndex].name}
+                    {displayTestimonials[currentIndex].name}
                   </div>
                   <div className="text-primary font-medium">
-                    {testimonials[currentIndex].service}
+                    {displayTestimonials[currentIndex].service}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {testimonials[currentIndex].location}
+                    {displayTestimonials[currentIndex].location}
                   </div>
                 </div>
               </motion.div>
@@ -147,7 +171,7 @@ export const TestimonialsSection = () => {
 
             {/* Dots Indicator */}
             <div className="flex space-x-2">
-              {testimonials.map((_, index) => (
+              {displayTestimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}

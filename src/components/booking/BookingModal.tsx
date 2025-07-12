@@ -27,6 +27,9 @@ interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   preselectedServiceId?: string;
+  services?: any[];
+  stylists?: any[];
+  salon?: any;
 }
 
 const steps = [
@@ -36,7 +39,7 @@ const steps = [
   { id: 4, title: 'Confirm Booking', component: BookingSummary },
 ];
 
-export const BookingModal = ({ isOpen, onClose, preselectedServiceId }: BookingModalProps) => {
+export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, stylists, salon }: BookingModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<BookingData>({
     services: [],
@@ -198,7 +201,9 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId }: BookingM
                       bookingData={bookingData}
                       onComplete={handleStepComplete}
                       {...(currentStep === 4 && { onBookingComplete: handleBookingComplete })}
-                      {...(currentStep === 1 && { preselectedServiceId })}
+                      {...(currentStep === 1 && { preselectedServiceId, services })}
+                      {...(currentStep === 2 && { stylists })}
+                      {...(currentStep === 4 && { salon })}
                     />
                   </motion.div>
                 </AnimatePresence>

@@ -24,7 +24,11 @@ const features = [
   },
 ];
 
-export const AboutSection = () => {
+interface AboutSectionProps {
+  salon?: any;
+}
+
+export const AboutSection = ({ salon }: AboutSectionProps) => {
   return (
     <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -42,13 +46,11 @@ export const AboutSection = () => {
             </div>
 
             <h2 className="text-3xl md:text-5xl font-heading font-bold text-foreground mb-6">
-              Why Choose Bloom Beauty?
+              Why Choose {salon?.name || "Bloom Beauty"}?
             </h2>
 
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              For over a decade, Bloom Beauty has been the trusted destination for luxury 
-              beauty services. We combine cutting-edge techniques with personalized care 
-              to help you look and feel your absolute best.
+              {salon?.about || "For over a decade, Bloom Beauty has been the trusted destination for luxury beauty services. We combine cutting-edge techniques with personalized care to help you look and feel your absolute best."}
             </p>
 
             <div className="grid sm:grid-cols-2 gap-6">
