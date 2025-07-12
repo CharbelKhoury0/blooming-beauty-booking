@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,16 +64,16 @@ const availableServices: Service[] = [
 
 interface ServiceSelectionProps {
   bookingData: BookingData;
-  onComplete: (data: Partial<BookingData>) => void;
+  setSelectedServices: React.Dispatch<React.SetStateAction<Service[]>>;
   preselectedServiceId?: string;
 }
 
 export const ServiceSelection = ({ 
   bookingData, 
-  onComplete, 
+  setSelectedServices, 
   preselectedServiceId 
 }: ServiceSelectionProps) => {
-  const [selectedServices, setSelectedServices] = useState<Service[]>(bookingData.services);
+  const selectedServices = bookingData.services;
 
   useEffect(() => {
     if (preselectedServiceId && selectedServices.length === 0) {
@@ -82,7 +82,7 @@ export const ServiceSelection = ({
         setSelectedServices([preselectedService]);
       }
     }
-  }, [preselectedServiceId, selectedServices.length]);
+  }, [preselectedServiceId, selectedServices.length, setSelectedServices]);
 
   const toggleService = (service: Service) => {
     setSelectedServices(prev => {
@@ -103,12 +103,7 @@ export const ServiceSelection = ({
     }, 0);
   };
 
-  const handleContinue = () => {
-    onComplete({
-      services: selectedServices,
-      totalPrice: calculateTotal(),
-    });
-  };
+  // Remove the effect that calls onComplete on every selection change
 
   return (
     <div className="p-6">

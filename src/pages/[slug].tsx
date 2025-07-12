@@ -95,6 +95,7 @@ const SalonPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar 
         salonName={salon.name}
+        slug={salon.slug}
         onBookingClick={() => handleBookingClick()} 
       />
       

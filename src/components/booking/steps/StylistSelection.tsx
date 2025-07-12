@@ -80,20 +80,14 @@ const stylists: Stylist[] = [
 
 interface StylistSelectionProps {
   bookingData: BookingData;
-  onComplete: (data: Partial<BookingData>) => void;
+  selectedStylist: string | undefined;
+  setSelectedStylist: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-export const StylistSelection = ({ bookingData, onComplete }: StylistSelectionProps) => {
-  const [selectedStylist, setSelectedStylist] = useState<string | undefined>(bookingData.stylist);
+export const StylistSelection = ({ bookingData, selectedStylist, setSelectedStylist }: StylistSelectionProps) => {
 
   const handleStylistSelect = (stylistId: string) => {
     setSelectedStylist(stylistId);
-  };
-
-  const handleContinue = () => {
-    if (selectedStylist) {
-      onComplete({ stylist: selectedStylist });
-    }
   };
 
   const getAvailabilityBadge = (availability: Stylist['availability']) => {

@@ -42,12 +42,13 @@ const generateTimeSlots = (date: Date): TimeSlot[] => {
 
 interface DateTimeSelectionProps {
   bookingData: BookingData;
-  onComplete: (data: Partial<BookingData>) => void;
+  selectedDate: Date | undefined;
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  selectedTime: string | undefined;
+  setSelectedTime: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-export const DateTimeSelection = ({ bookingData, onComplete }: DateTimeSelectionProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(bookingData.date);
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(bookingData.time);
+export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, selectedTime, setSelectedTime }: DateTimeSelectionProps) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -61,15 +62,6 @@ export const DateTimeSelection = ({ bookingData, onComplete }: DateTimeSelection
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
-  };
-
-  const handleContinue = () => {
-    if (selectedDate && selectedTime) {
-      onComplete({
-        date: selectedDate,
-        time: selectedTime,
-      });
-    }
   };
 
   const getDateLabel = (date: Date) => {

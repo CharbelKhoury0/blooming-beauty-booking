@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,13 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
     totalPrice: 0,
   });
   const [isComplete, setIsComplete] = useState(false);
+  // Step 1: Service selection state
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  // Step 2: Stylist selection state
+  const [selectedStylist, setSelectedStylist] = useState<string | undefined>(undefined);
+  // Step 3: Date & Time selection state
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -62,7 +69,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   const handleStepComplete = (data: Partial<BookingData>) => {
     setBookingData(prev => ({ ...prev, ...data }));
     if (currentStep < steps.length) {
-      handleNext();
+      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -96,10 +103,12 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   };
 
   const CurrentStepComponent = steps[currentStep - 1].component;
+  // Ref for ServiceSelection
+  const serviceSelectionRef = useRef(null);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col" style={{height: '90vh'}}>
         <AnimatePresence mode="wait">
           {isComplete ? (
             <motion.div
@@ -135,10 +144,10 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col h-full"
+              className="flex flex-col flex-1 min-h-0"
             >
               {/* Header */}
-              <DialogHeader className="px-6 py-4 border-b border-border">
+              <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
                 <div className="flex items-center justify-between">
                   <DialogTitle className="text-xl font-heading font-semibold">
                     Book Your Appointment
@@ -147,48 +156,45 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
-                
                 {/* Progress Bar */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    {steps.map((step, index) => (
+                <div className="flex items-center justify-between mb-2">
+                  {steps.map((step, index) => (
+                    <div
+                      key={step.id}
+                      className={`flex items-center ${
+                        index < steps.length - 1 ? 'flex-1' : ''
+                      }`}
+                    >
                       <div
-                        key={step.id}
-                        className={`flex items-center ${
-                          index < steps.length - 1 ? 'flex-1' : ''
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                          step.id <= currentStep
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
                         }`}
                       >
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                            step.id <= currentStep
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground'
-                          }`}
-                        >
-                          {step.id}
-                        </div>
-                        <span
-                          className={`ml-2 text-sm font-medium ${
-                            step.id <= currentStep ? 'text-primary' : 'text-muted-foreground'
-                          }`}
-                        >
-                          {step.title}
-                        </span>
-                        {index < steps.length - 1 && (
-                          <div
-                            className={`flex-1 h-0.5 mx-4 transition-colors ${
-                              step.id < currentStep ? 'bg-primary' : 'bg-muted'
-                            }`}
-                          />
-                        )}
+                        {step.id}
                       </div>
-                    ))}
-                  </div>
+                      <span
+                        className={`ml-2 text-sm font-medium ${
+                          step.id <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {step.title}
+                      </span>
+                      {index < steps.length - 1 && (
+                        <div
+                          className={`flex-1 h-0.5 mx-4 transition-colors ${
+                            step.id < currentStep ? 'bg-primary' : 'bg-muted'
+                          }`}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </DialogHeader>
 
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto">
+              {/* Scrollable Content */}
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4" style={{maxHeight: 'calc(90vh - 72px - 64px)'}}>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentStep}
@@ -197,55 +203,76 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <CurrentStepComponent
-                      bookingData={bookingData}
-                      onComplete={handleStepComplete}
-                      {...(currentStep === 4 && { onBookingComplete: handleBookingComplete })}
-                      {...(currentStep === 1 && { preselectedServiceId, services })}
-                      {...(currentStep === 2 && { stylists })}
-                      {...(currentStep === 4 && { salon })}
-                    />
+                    {currentStep === 1 ? (
+                      <ServiceSelection
+                        bookingData={{ ...bookingData, services: selectedServices }}
+                        setSelectedServices={setSelectedServices}
+                        preselectedServiceId={preselectedServiceId}
+                      />
+                    ) : currentStep === 2 ? (
+                      <StylistSelection
+                        bookingData={bookingData}
+                        selectedStylist={selectedStylist}
+                        setSelectedStylist={setSelectedStylist}
+                      />
+                    ) : currentStep === 3 ? (
+                      <DateTimeSelection
+                        bookingData={bookingData}
+                        selectedDate={selectedDate}
+                        setSelectedDate={setSelectedDate}
+                        selectedTime={selectedTime}
+                        setSelectedTime={setSelectedTime}
+                      />
+                    ) : (
+                      <CurrentStepComponent
+                        bookingData={bookingData}
+                        onComplete={handleStepComplete}
+                        {...(currentStep === 4 && { onBookingComplete: handleBookingComplete })}
+                        {...(currentStep === 4 && { salon })}
+                      />
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>
-
-              {/* Footer */}
-              <div className="px-6 py-4 border-t border-border">
-                <div className="flex items-center justify-between">
+              {/* Sticky Footer */}
+              <div className="flex items-center justify-between px-6 pb-6 pt-2 bg-background shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={handlePrev}
+                  disabled={currentStep === 1}
+                  className="flex items-center space-x-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  Step {currentStep} of {steps.length}
+                </div>
+                {currentStep < steps.length && (
                   <Button
-                    variant="outline"
-                    onClick={handlePrev}
-                    disabled={currentStep === 1}
+                    variant="luxury"
+                    onClick={() => {
+                      if (currentStep === 1) {
+                        const totalPrice = selectedServices.reduce((total, service) => {
+                          const price = parseFloat(service.price.replace(/[^0-9.]/g, ''));
+                          return total + price;
+                        }, 0);
+                        handleStepComplete({ services: selectedServices, totalPrice });
+                      } else if (currentStep === 2) {
+                        handleStepComplete({ stylist: selectedStylist });
+                      } else if (currentStep === 3) {
+                        handleStepComplete({ date: selectedDate, time: selectedTime });
+                      } else {
+                        handleNext();
+                      }
+                    }}
+                    disabled={currentStep === 1 ? selectedServices.length === 0 : currentStep === 2 ? !selectedStylist : currentStep === 3 ? !(selectedDate && selectedTime) : !canProceed()}
                     className="flex items-center space-x-2"
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>Previous</span>
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
-
-                  <div className="text-sm text-muted-foreground">
-                    Step {currentStep} of {steps.length}
-                  </div>
-
-                  {currentStep < steps.length ? (
-                    <Button
-                      variant="luxury"
-                      onClick={handleNext}
-                      disabled={!canProceed()}
-                      className="flex items-center space-x-2"
-                    >
-                      <span>Next</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="luxury"
-                      onClick={handleBookingComplete}
-                      disabled={!canProceed()}
-                    >
-                      Confirm Booking
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
             </motion.div>
           )}

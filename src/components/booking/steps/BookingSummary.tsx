@@ -86,21 +86,19 @@ export const BookingSummary = ({
             <Separator />
 
             {/* Services */}
-            <div>
-              <h5 className="font-medium text-foreground mb-3">Services</h5>
-              <div className="space-y-3">
-                {bookingData.services.map((service) => (
-                  <div key={service.id} className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium text-foreground">{service.name}</div>
-                      <div className="text-sm text-muted-foreground">{service.duration}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium text-primary">{service.price}</div>
-                    </div>
+            <h5 className="font-medium text-foreground mb-3">Services</h5>
+            <div className="space-y-3">
+              {bookingData.services.map((service) => (
+                <div key={service.id} className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium text-foreground">{service.name}</div>
+                    <div className="text-sm text-muted-foreground">{service.duration}</div>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                    <div className="font-medium text-primary">{service.price}</div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <Separator />
@@ -213,30 +211,30 @@ export const BookingSummary = ({
             </div>
           </Card>
 
-          {/* Submit Button */}
-          <Button
-            onClick={handleSubmit}
-            disabled={!isValid || isSubmitting}
-            className="w-full mt-6"
-            variant="luxury"
-            size="lg"
-          >
-            {isSubmitting ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-              />
-            ) : (
-              'Confirm Booking'
-            )}
-          </Button>
-
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            By confirming, you agree to our terms of service and cancellation policy.
-          </p>
         </div>
       </div>
+
+      {/* Main Confirm Booking Button at the bottom */}
+      <Button
+        onClick={handleSubmit}
+        disabled={!isValid || isSubmitting}
+        className="w-full mt-6"
+        variant="luxury"
+        size="lg"
+      >
+        {isSubmitting ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+          />
+        ) : (
+          'Confirm Booking'
+        )}
+      </Button>
+      <p className="text-xs text-muted-foreground text-center mt-2">
+        By confirming, you agree to our terms of service and cancellation policy.
+      </p>
     </div>
   );
 };

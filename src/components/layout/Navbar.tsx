@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Calendar, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   onBookingClick: () => void;
   salonName?: string;
+  slug?: string;
 }
 
-export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty" }: NavbarProps) => {
+export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -26,7 +28,7 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty" }: NavbarPro
     { label: 'Services', href: '#services' },
     { label: 'About', href: '#about' },
     { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Contact', href: slug ? `/${slug}/contact` : '/contact' },
   ];
 
   return (
@@ -56,19 +58,29 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty" }: NavbarPro
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <motion.a
-                key={item.label}
-                href={item.href}
-                className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
-                whileHover={{ y: -2 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.querySelector(item.href);
-                  element?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                {item.label}
-              </motion.a>
+              item.label === 'Contact' ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <motion.a
+                  key={item.label}
+                  href={item.href}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
+                  whileHover={{ y: -2 }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.querySelector(item.href);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  {item.label}
+                </motion.a>
+              )
             ))}
           </div>
 
@@ -111,19 +123,30 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty" }: NavbarPro
           >
             <div className="space-y-4">
               {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="block text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const element = document.querySelector(item.href);
-                    element?.scrollIntoView({ behavior: 'smooth' });
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {item.label}
-                </a>
+                item.label === 'Contact' ? (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className="block text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="block text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const element = document.querySelector(item.href);
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                )
               ))}
               <Button
                 variant="luxury"

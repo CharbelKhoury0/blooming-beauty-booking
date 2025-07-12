@@ -11,6 +11,7 @@ import {
   Twitter,
   Calendar
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface FooterProps {
   onBookingClick: () => void;
@@ -45,7 +46,7 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
     { label: 'About Us', href: '#about' },
     { label: 'Services', href: '#services' },
     { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Contact', href: '/contact' },
     { label: 'Privacy Policy', href: '#' },
     { label: 'Terms of Service', href: '#' },
   ];
@@ -106,19 +107,28 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
               <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-white/80 hover:text-primary transition-colors"
-                      onClick={(e) => {
-                        if (link.href.startsWith('#')) {
-                          e.preventDefault();
-                          const element = document.querySelector(link.href);
-                          element?.scrollIntoView({ behavior: 'smooth' });
-                        }
-                      }}
-                    >
-                      {link.label}
-                    </a>
+                    {link.label === 'Contact' ? (
+                      <Link
+                        to={link.href}
+                        className="text-white/80 hover:text-primary transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="text-white/80 hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          if (link.href.startsWith('#')) {
+                            e.preventDefault();
+                            const element = document.querySelector(link.href);
+                            element?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -209,28 +219,17 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
             </div>
             
             <div className="flex items-center space-x-6 text-sm text-white/60">
-              <a href="#" className="hover:text-primary transition-colors">
+              <Link to={`/${salon?.slug || ''}/privacy-policy`} className="hover:text-primary transition-colors">
                 Privacy Policy
-              </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              </Link>
+              <Link to={`/${salon?.slug || ''}/terms-of-service`} className="hover:text-primary transition-colors">
                 Terms of Service
-              </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              </Link>
+              <Link to={`/${salon?.slug || ''}/cancellation-policy`} className="hover:text-primary transition-colors">
                 Cancellation Policy
-              </a>
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Embedded Map Placeholder */}
-      <div className="bg-muted/10 h-64 flex items-center justify-center border-t border-white/10">
-        <div className="text-center text-white/60">
-          <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p className="text-sm">
-            Interactive map will be integrated here<br />
-            {contactInfo.address}
-          </p>
         </div>
       </div>
     </footer>
