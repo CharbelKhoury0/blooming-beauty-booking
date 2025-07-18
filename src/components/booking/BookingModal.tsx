@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -105,7 +105,14 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
 
   const CurrentStepComponent = steps[currentStep - 1].component;
   // Ref for ServiceSelection
-  const serviceSelectionRef = useRef(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top when currentStep changes
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -198,6 +205,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
 
               {/* Scrollable Content */}
               <div
+                ref={contentRef}
                 className="flex-1 min-h-0 overflow-y-auto px-6 py-4 sm:px-2 sm:py-2"
                 style={{ maxHeight: 'calc(90vh - 72px - 64px)' }}
               >
@@ -241,16 +249,17 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
               </div>
               {/* Sticky Footer */}
               <div className="flex items-center justify-between px-6 pb-6 pt-2 bg-background shrink-0 sm:px-2 sm:pb-3 sm:pt-1 sm:flex-col sm:gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePrev}
-                  disabled={currentStep === 1}
-                 className="flex items-center space-x-2 w-auto sm:w-full"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Previous</span>
-                </Button>
-               <div className="text-sm text-muted-foreground sm:text-xs">
+                {currentStep > 1 && (
+                  <Button
+                    variant="outline"
+                    onClick={handlePrev}
+                    className="flex items-center space-x-2 w-auto sm:w-full"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </Button>
+                )}
+                <div className="text-sm text-muted-foreground sm:text-xs">
                   Step {currentStep} of {steps.length}
                 </div>
                 {currentStep < steps.length && (

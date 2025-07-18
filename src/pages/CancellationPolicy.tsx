@@ -7,6 +7,7 @@ import { Salon } from '@/types/salon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Ban, Clock, Phone, Mail, AlertTriangle, FileText, MapPin } from 'lucide-react';
+import { BookingModal } from '@/components/booking/BookingModal';
 
 const PolicySection = ({ icon, title, children }) => (
   <Card className="mb-8 border-primary/20">
@@ -22,27 +23,65 @@ const PolicySection = ({ icon, title, children }) => (
   </Card>
 );
 
-const CancellationPolicy = () => {
+export default function CancellationPolicy() {
   const { slug } = useParams<{ slug: string }>();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+  const [services, setServices] = useState([]);
+  const [stylists, setStylists] = useState([]);
 
   useEffect(() => {
     const fetchSalon = async () => {
       if (!slug) return;
-      const { data } = await supabase.from('salons').select('*').eq('slug', slug).single();
-      setSalon(data);
-      setLoading(false);
+      try {
+        // Fetch salon by slug
+        const { data: salonData, error: salonError } = await supabase
+          .from('salons')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (salonError || !salonData) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch services and stylists for booking modal
+        const [servicesResult, stylistsResult] = await Promise.all([
+          supabase.from('services').select('*').eq('salon_id', salonData.id),
+          supabase.from('stylists').select('*').eq('salon_id', salonData.id)
+        ]);
+
+        setSalon(salonData);
+        setServices(servicesResult.data || []);
+        setStylists(stylistsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching salon data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchSalon();
   }, [slug]);
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!salon) return <div className="min-h-screen flex items-center justify-center">Salon not found.</div>;
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
+      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => handleBookingClick()} />
       <div className="container max-w-4xl mx-auto py-12 px-4 md:px-6 pt-24">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
@@ -67,7 +106,7 @@ const CancellationPolicy = () => {
           <PolicySection icon={<Phone className="h-5 w-5" />} title="How to Cancel">
             <ul className="list-disc pl-6 space-y-2">
               <li>Contact us by phone or email as soon as possible to cancel or reschedule.</li>
-              <li>Our contact: <a href={`mailto:${salon.booking_email}`} className="text-primary underline">{salon.booking_email || 'our email'}</a> or call {salon.phone || 'our phone number'}.</li>
+              <li>Our contact: call {salon.phone || 'our phone number'} or visit us at {salon.address || 'our address'}.</li>
             </ul>
           </PolicySection>
 
@@ -76,7 +115,7 @@ const CancellationPolicy = () => {
           </PolicySection>
 
           <PolicySection icon={<Mail className="h-5 w-5" />} title="Contact Us">
-            <p>If you have any questions about this Cancellation Policy, please contact us at <a href={`mailto:${salon.booking_email}`} className="text-primary underline">{salon.booking_email || 'our email'}</a> or visit us at {salon.address || 'our address'}.</p>
+            <p>If you have any questions about this Cancellation Policy, please contact us by calling {salon.phone || 'our phone number'} or visit us at {salon.address || 'our address'}.</p>
           </PolicySection>
         </div>
 
@@ -91,9 +130,15 @@ const CancellationPolicy = () => {
           </p>
         </div>
       </div>
-      <Footer salon={salon} onBookingClick={() => {}} />
+      <Footer salon={salon} onBookingClick={() => handleBookingClick()} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+        services={services}
+        stylists={stylists}
+        salon={salon}
+      />
     </div>
   );
-};
-
-export default CancellationPolicy; 
+} 

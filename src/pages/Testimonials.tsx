@@ -1,12 +1,26 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Salon, Testimonial } from '@/types/salon';
 import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { BookingModal } from '@/components/booking/BookingModal';
+
+const serviceOptions = [
+  'Hair Styling & Color',
+  'Bridal Package',
+  'Facial Treatment',
+  'Hair Color Correction',
+  'Full Service Package',
+  'Other',
+];
 
 const Testimonials = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -14,26 +28,105 @@ const Testimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Modal state for testimonial form
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    service: serviceOptions[0],
+    rating: 5,
+    text: '',
+    location: '',
+  });
+  const [localTestimonials, setLocalTestimonials] = useState<Testimonial[]>([]);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+  const [services, setServices] = useState([]);
+  const [stylists, setStylists] = useState([]);
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRatingChange = (rating: number) => {
+    setForm(prev => ({ ...prev, rating }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from('testimonials').insert([
+      {
+        salon_id: salon.id,
+        author_name: form.name,
+        serviceName: form.service,
+        rating: form.rating,
+        text: form.text,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    ]);
+    if (!error) {
+      setIsFormOpen(false);
+      setForm({ name: '', service: serviceOptions[0], rating: 5, text: '', location: '' });
+      toast.success('Thank you for your testimonial!');
+    } else {
+      console.error('Supabase insert error:', error);
+      toast.error('Failed to submit testimonial. Please try again.');
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!slug) return;
-      const { data: salonData } = await supabase.from('salons').select('*').eq('slug', slug).single();
-      setSalon(salonData);
-      if (salonData) {
-        const { data: testimonialsData } = await supabase.from('testimonials').select('*').eq('salon_id', salonData.id).order('created_at', { ascending: false });
-        setTestimonials(testimonialsData || []);
+      try {
+        // Fetch salon by slug
+        const { data: salonData, error: salonError } = await supabase
+          .from('salons')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (salonError || !salonData) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch testimonials, services, and stylists
+        const [testimonialsResult, servicesResult, stylistsResult] = await Promise.all([
+          supabase.from('testimonials').select('*').eq('salon_id', salonData.id).order('created_at', { ascending: false }),
+          supabase.from('services').select('*').eq('salon_id', salonData.id),
+          supabase.from('stylists').select('*').eq('salon_id', salonData.id)
+        ]);
+
+        setSalon(salonData);
+        setTestimonials(testimonialsResult.data || []);
+        setServices(servicesResult.data || []);
+        setStylists(stylistsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchData();
   }, [slug]);
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!salon) return <div className="min-h-screen flex items-center justify-center">Salon not found.</div>;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
+      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => handleBookingClick()} />
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative py-20 bg-gradient-to-b from-primary/10 to-background">
@@ -47,12 +140,71 @@ const Testimonials = () => {
               <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-6">
                 Hear directly from our happy customers about their experiences at {salon.name}. We pride ourselves on delivering exceptional service and results.
               </p>
-              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to={`/${salon.slug}/submit-testimonial`}>Write a Testimonial</Link>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsFormOpen(true)}>
+                Write a Testimonial
               </Button>
             </div>
           </div>
         </section>
+
+        {/* Testimonial Form Modal */}
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="w-full max-w-xl py-8">
+            <DialogHeader>
+              <DialogTitle>Write a Testimonial</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4">
+              <Input
+                name="name"
+                value={form.name}
+                onChange={handleFormChange}
+                placeholder="Your Name"
+                required
+                className="border border-primary/40 focus-visible:border-primary"
+              />
+              <select
+                name="service"
+                value={form.service}
+                onChange={handleFormChange}
+                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary"
+                required
+              >
+                {serviceOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">Rating:</span>
+                {[1,2,3,4,5].map(star => (
+                  <button
+                    type="button"
+                    key={star}
+                    onClick={() => handleRatingChange(star)}
+                    className="focus:outline-none"
+                  >
+                    <Star className={`w-6 h-6 transition-colors duration-150 ${
+                      star <= form.rating
+                        ? 'text-yellow-500 fill-yellow-500'
+                        : 'text-muted-foreground fill-none stroke-2'
+                    }`} />
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                name="text"
+                value={form.text}
+                onChange={handleFormChange}
+                placeholder="Your testimonial..."
+                required
+                rows={4}
+                className="border border-primary/40 focus-visible:border-primary"
+              />
+              <Button type="submit" variant="luxury" className="rounded-lg w-full" disabled={!salon} onClick={() => setIsFormOpen(true)}>
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Testimonials Grid Section */}
         <section className="container mx-auto py-16 px-4">
@@ -77,7 +229,7 @@ const Testimonials = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-primary">- {testimonial.author_name}</p>
-                    {testimonial.serviceName && <p className="text-sm text-muted-foreground">Service: {testimonial.serviceName}</p>}
+                    <p className="text-sm text-muted-foreground">Service: {testimonial.serviceName || 'Beauty Service'}</p>
                   </div>
                 </div>
               ))}
@@ -85,7 +237,15 @@ const Testimonials = () => {
           )}
         </section>
       </main>
-      <Footer salon={salon} onBookingClick={() => {}} />
+      <Footer salon={salon} onBookingClick={() => handleBookingClick()} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+        services={services}
+        stylists={stylists}
+        salon={salon}
+      />
     </div>
   );
 };

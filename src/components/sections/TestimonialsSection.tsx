@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 // CMS-ready testimonial data structure
 export interface Testimonial {
@@ -57,32 +62,92 @@ const testimonials: Testimonial[] = [
   },
 ];
 
+const serviceOptions = [
+  'Hair Styling & Color',
+  'Bridal Package',
+  'Facial Treatment',
+  'Hair Color Correction',
+  'Full Service Package',
+  'Other',
+];
+
 interface TestimonialsSectionProps {
   testimonials?: any[];
+  salon?: any;
 }
 
-export const TestimonialsSection = ({ testimonials = [] }: TestimonialsSectionProps) => {
+export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSectionProps) => {
   // Use provided testimonials or fallback to default
-  const displayTestimonials = testimonials.length > 0 ? testimonials.map(t => ({
-    id: t.id,
-    name: t.author_name,
-    text: t.text,
-    rating: t.rating,
-    service: 'Beauty Services',
-    location: 'Valued Client',
-  })) : [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      service: 'Hair Styling & Color',
-      rating: 5,
-      text: 'Absolutely amazing experience! The stylists at Bloom Beauty truly understand their craft. My hair has never looked better, and the salon atmosphere is so relaxing.',
-      location: 'Downtown Client',
-    },
-    // ... other fallback testimonials
-  ];
-
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Modal state for testimonial form
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    service: serviceOptions[0],
+    rating: 5,
+    text: '',
+    location: '',
+  });
+  const [localTestimonials, setLocalTestimonials] = useState<Testimonial[]>([]);
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRatingChange = (rating: number) => {
+    setForm(prev => ({ ...prev, rating }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!salon) {
+      toast.error('Salon information not available. Please try again.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('testimonials').insert([
+        {
+          salon_id: salon.id,
+          author_name: form.name,
+          serviceName: form.service,
+          rating: form.rating,
+          text: form.text,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+      if (!error) {
+        // Add to local testimonials for immediate display
+        setLocalTestimonials(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            name: form.name,
+            service: form.service,
+            rating: form.rating,
+            text: form.text,
+            location: form.location,
+          },
+        ]);
+        
+        setForm({ name: '', service: serviceOptions[0], rating: 5, text: '', location: '' });
+        setIsFormOpen(false);
+        setCurrentIndex(0);
+        toast.success('Thank you for your testimonial!');
+      } else {
+        console.error('Supabase insert error:', error);
+        toast.error('Failed to submit testimonial. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting testimonial:', error);
+      toast.error('Failed to submit testimonial. Please try again.');
+    }
+  };
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % displayTestimonials.length);
@@ -91,6 +156,30 @@ export const TestimonialsSection = ({ testimonials = [] }: TestimonialsSectionPr
   const prevTestimonial = () => {
     setCurrentIndex((prev) => (prev - 1 + displayTestimonials.length) % displayTestimonials.length);
   };
+
+  const displayTestimonials = [
+    ...localTestimonials,
+    ...(testimonials.length > 0
+      ? testimonials.map(t => ({
+          id: t.id,
+          name: t.author_name,
+          text: t.text,
+          rating: t.rating,
+          service: 'Beauty Services',
+          location: 'Valued Client',
+        }))
+      : [
+          {
+            id: '1',
+            name: 'Sarah Johnson',
+            service: 'Hair Styling & Color',
+            rating: 5,
+            text: 'Absolutely amazing experience! The stylists at Bloom Beauty truly understand their craft. My hair has never looked better, and the salon atmosphere is so relaxing.',
+            location: 'Downtown Client',
+          },
+          // ... other fallback testimonials
+        ]),
+  ];
 
   return (
     <section id="testimonials" className="py-20 bg-gradient-to-b from-muted/30 to-background">
@@ -116,6 +205,14 @@ export const TestimonialsSection = ({ testimonials = [] }: TestimonialsSectionPr
             Don't just take our word for it. Here's what our valued clients 
             have to say about their experience at Bloom Beauty.
           </p>
+
+          <Button
+            variant="luxury"
+            className="mt-8"
+            onClick={() => setIsFormOpen(true)}
+          >
+            Write a Testimonial
+          </Button>
         </motion.div>
 
         {/* Testimonial Carousel */}
@@ -194,6 +291,65 @@ export const TestimonialsSection = ({ testimonials = [] }: TestimonialsSectionPr
             </Button>
           </div>
         </div>
+
+        {/* Testimonial Form Modal */}
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="w-full max-w-xl py-8">
+            <DialogHeader>
+              <DialogTitle>Write a Testimonial</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4">
+              <Input
+                name="name"
+                value={form.name}
+                onChange={handleFormChange}
+                placeholder="Your Name"
+                required
+                className="border border-primary/40 focus-visible:border-primary"
+              />
+              <select
+                name="service"
+                value={form.service}
+                onChange={handleFormChange}
+                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary"
+                required
+              >
+                {serviceOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">Rating:</span>
+                {[1,2,3,4,5].map(star => (
+                  <button
+                    type="button"
+                    key={star}
+                    onClick={() => handleRatingChange(star)}
+                    className="focus:outline-none"
+                  >
+                    <Star className={`w-6 h-6 transition-colors duration-150 ${
+                      star <= form.rating
+                        ? 'text-yellow-500 fill-yellow-500'
+                        : 'text-muted-foreground fill-none stroke-2'
+                    }`} />
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                name="text"
+                value={form.text}
+                onChange={handleFormChange}
+                placeholder="Your testimonial..."
+                required
+                rows={4}
+                className="border border-primary/40 focus-visible:border-primary"
+              />
+              <Button type="submit" variant="luxury" className="rounded-lg w-full" disabled={!salon}>
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Trust Indicators */}
         <motion.div

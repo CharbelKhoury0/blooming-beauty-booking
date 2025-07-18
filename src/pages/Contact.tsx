@@ -10,7 +10,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Phone, Mail, Globe, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Globe, Clock, Send, CheckCircle2, ChevronDown, MessageSquare } from 'lucide-react';
+import { toast } from 'sonner';
+import { BookingModal } from '@/components/booking/BookingModal';
+
+// Helper to extract lat/lng from Google Maps embed URL
+function extractLatLngFromUrl(url: string): { lat: string; lng: string } | null {
+  // Try @lat,lng
+  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) {
+    return { lat: atMatch[1], lng: atMatch[2] };
+  }
+  // Try !3dLAT!4dLNG
+  const dMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (dMatch) {
+    return { lat: dMatch[1], lng: dMatch[2] };
+  }
+  return null;
+}
 
 export default function Contact() {
   const { slug } = useParams<{ slug: string }>();
@@ -18,13 +35,42 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hoursOpen, setHoursOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+  const [services, setServices] = useState([]);
+  const [stylists, setStylists] = useState([]);
 
   useEffect(() => {
     const fetchSalon = async () => {
       if (!slug) return;
-      const { data } = await supabase.from('salons').select('*').eq('slug', slug).single();
-      setSalon(data);
-      setLoading(false);
+      try {
+        // Fetch salon by slug
+        const { data: salonData, error: salonError } = await supabase
+          .from('salons')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (salonError || !salonData) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch services and stylists for booking modal
+        const [servicesResult, stylistsResult] = await Promise.all([
+          supabase.from('services').select('*').eq('salon_id', salonData.id),
+          supabase.from('stylists').select('*').eq('salon_id', salonData.id)
+        ]);
+
+        setSalon(salonData);
+        setServices(servicesResult.data || []);
+        setStylists(stylistsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching salon data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchSalon();
   }, [slug]);
@@ -33,34 +79,59 @@ export default function Contact() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!salon) return;
+    
+    // Log the form data to console for now
+    console.log('Contact form submitted:', {
+      salon_id: salon.id,
+      ...form,
+      created_at: new Date().toISOString(),
+    });
+    
+    // Show success message
     setSubmitted(true);
-    // Here you would send the form data to your backend or email service
-    setTimeout(() => {
-      setSubmitted(false);
-      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-    }, 3000);
+    setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+    toast.success('Your message has been sent! We\'ll get back to you soon.');
+    setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!salon) return <div className="min-h-screen flex items-center justify-center">Salon not found.</div>;
 
-  const businessHours = [
-    { day: 'Monday - Friday', time: '9:00 AM - 8:00 PM' },
-    { day: 'Saturday', time: '10:00 AM - 6:00 PM' },
-    { day: 'Sunday', time: 'Closed' },
-  ];
+  // Parse working_hours from the salon object
+  const businessHours = salon.working_hours
+    ? salon.working_hours.split('|').map(item => {
+        const [day, ...hoursArr] = item.split(':');
+        return {
+          day: day.trim(),
+          time: hoursArr.join(':').trim(),
+        };
+      })
+    : [];
+
+  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
+      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => handleBookingClick()} />
       <section className="py-16 md:py-24 bg-gradient-to-b from-primary/10 to-background">
         <div className="mt-24"></div>
         <div className="container px-4 md:px-6">
           <div className="max-w-2xl mx-auto bg-card shadow-2xl rounded-2xl p-10 mb-12 border border-border text-center">
             <div className="inline-flex items-center space-x-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
-              <Mail className="w-5 h-5 text-primary" />
+              <MessageSquare className="w-5 h-5 text-primary" />
               <span className="text-sm font-medium text-primary">Contact Us</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 text-foreground">Contact Us</h1>
@@ -164,7 +235,13 @@ export default function Contact() {
                   <MapPin className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
                   <div>
                     <h3 className="font-medium mb-1">Address</h3>
-                    <p className="text-muted-foreground">{salon.address || '123 Beauty Lane'}</p>
+                    <p className="text-muted-foreground">
+                      {salon.address ? (
+                        <span>{salon.address}</span>
+                      ) : (
+                        <span className="text-muted-foreground/60 italic">Address not available</span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -172,56 +249,103 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium mb-1">Phone</h3>
                     <p className="text-muted-foreground">
-                      <a href={`tel:${salon.phone || ''}`} className="hover:text-primary transition-colors">
-                        {salon.phone || '(123) 456-7890'}
-                      </a>
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Mail className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium mb-1">Email</h3>
-                    <p className="text-muted-foreground">
-                      <a href={`mailto:${salon.booking_email || ''}`} className="hover:text-primary transition-colors">
-                        {salon.booking_email || 'info@bloombeauty.com'}
-                      </a>
+                      {salon.phone ? (
+                        <a href={`tel:${salon.phone}`} className="hover:text-primary transition-colors">
+                          {salon.phone}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground/60 italic">Phone not available</span>
+                      )}
                     </p>
                   </div>
                 </div>
                 <Separator className="my-4" />
                 <div className="flex items-start">
                   <Clock className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="font-medium mb-2">Business Hours</h3>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-[250px] w-full text-left">
-                        <tbody>
-                          {businessHours.map((item, index) => (
-                            <tr key={index}>
-                              <td className="py-1 pr-4 text-muted-foreground whitespace-nowrap">{item.day}</td>
-                              <td className={`py-1 font-medium text-right ${item.time === 'Closed' ? 'text-red-500 font-semibold' : ''}`}>{item.time}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    {businessHours.length > 0 && (
+                      <div>
+                        <button
+                          type="button"
+                          className="w-full flex justify-between items-center px-3 py-2 bg-muted rounded-lg border border-border hover:bg-primary/10 transition-all duration-200 group"
+                          onClick={() => setHoursOpen(o => !o)}
+                        >
+                          <span className="text-foreground text-sm font-body font-medium">View Hours</span>
+                          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${hoursOpen ? 'rotate-180' : ''} group-hover:text-foreground`} />
+                        </button>
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${hoursOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                          <div className="bg-muted/50 rounded-lg border border-border p-3">
+                            <div className="space-y-2">
+                              {businessHours.map((item, index) => (
+                                <div key={index} className="flex justify-between items-center py-1">
+                                  <span className="text-muted-foreground text-sm font-body">{item.day}</span>
+                                  <span className={`text-sm font-body font-medium ${item.time === 'Closed' ? 'text-red-500' : 'text-foreground'}`}>
+                                    {item.time}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="mt-8 pt-6 border-t border-border">
                 <h3 className="font-medium mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Find Us On The Map</h3>
-                <div className="bg-muted rounded-md h-[200px] flex items-center justify-center border border-border shadow-inner">
-                  <p className="text-muted-foreground text-sm">
-                    Map placeholder - Google Maps or other map service would be integrated here
-                  </p>
-                </div>
+                {(() => {
+                  let mapCenter = '';
+                  let marker = '';
+                  let mapsUrl = '';
+                  if (salon.map_embed_url) {
+                    const coords = extractLatLngFromUrl(salon.map_embed_url);
+                    if (coords) {
+                      mapCenter = `${coords.lat},${coords.lng}`;
+                      marker = `color:pink|${coords.lat},${coords.lng}`;
+                      mapsUrl = salon.map_embed_url;
+                    }
+                  }
+                  if (!mapCenter && salon.address) {
+                    mapCenter = encodeURIComponent(salon.address);
+                    marker = `color:pink|${encodeURIComponent(salon.address)}`;
+                    mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address)}`;
+                  }
+                  if (!mapCenter) return null; // No valid location
+                  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=15&size=600x200&markers=${marker}&key=${GOOGLE_MAPS_API_KEY}`;
+                  return (
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block bg-muted rounded-md h-[200px] flex items-center justify-center border border-border shadow-inner hover:ring-2 hover:ring-primary transition overflow-hidden"
+                      title="Open in Google Maps"
+                    >
+                      <img
+                        src={staticMapUrl}
+                        alt="Salon Location Map"
+                        className="w-full h-full object-cover rounded-md"
+                        style={{ minHeight: 200 }}
+                        onError={e => { e.currentTarget.src = '/placeholder-map.png'; }}
+                      />
+                    </a>
+                  );
+                })()}
               </div>
             </Card>
           </div>
         </div>
       </section>
-      <Footer salon={salon} onBookingClick={() => {}} />
+      <Footer salon={salon} onBookingClick={() => handleBookingClick()} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+        services={services}
+        stylists={stylists}
+        salon={salon}
+      />
     </div>
   );
 } 

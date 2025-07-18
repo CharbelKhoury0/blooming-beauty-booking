@@ -44,8 +44,9 @@ export const BookingSummary = ({
 
   const calculateTotal = () => {
     return bookingData.services.reduce((total, service) => {
-      const price = parseFloat(service.price.replace('$', ''));
-      return total + price;
+      // Extract only the numeric part of the price string
+      const price = parseFloat(String(service.price).replace(/[^0-9.]/g, ''));
+      return total + (isNaN(price) ? 0 : price);
     }, 0);
   };
 
@@ -55,13 +56,14 @@ export const BookingSummary = ({
       return;
     }
 
-    const selectedStylist = bookingData.salon.stylists?.find(s => s.name === bookingData.stylist) || 
-                          bookingData.salon.stylists?.[0];
-
-    if (!selectedStylist) {
-      toast.error('Stylist information not available. Please go back and select a stylist.');
-      return;
+    // Always use the first stylist if available, otherwise leave stylist fields blank
+    let selectedStylist = null;
+    if (bookingData.salon.stylists && bookingData.salon.stylists.length > 0) {
+      selectedStylist = bookingData.salon.stylists.find(s => s.name === bookingData.stylist) || bookingData.salon.stylists[0];
     }
+    // Always provide a non-null stylist name
+    const stylistName = selectedStylist?.name || 'Unknown';
+    const stylistId = selectedStylist?.id || undefined;
 
     const bookingRequest = {
       salon_id: bookingData.salon.id,
@@ -71,8 +73,8 @@ export const BookingSummary = ({
       customer_notes: contactInfo.notes || undefined,
       booking_date: format(bookingData.date, 'yyyy-MM-dd'),
       booking_time: bookingData.time,
-      stylist_id: selectedStylist.id,
-      stylist_name: selectedStylist.name,
+      stylist_id: stylistId,
+      stylist_name: stylistName,
       services: bookingData.services,
       total_price: calculateTotal(),
       status: 'pending' as const

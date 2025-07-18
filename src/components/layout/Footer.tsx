@@ -4,34 +4,40 @@ import { Separator } from '@/components/ui/separator';
 import { 
   MapPin, 
   Phone, 
-  Mail, 
   Clock, 
   Instagram, 
   Facebook, 
   Twitter,
-  Calendar
+  Calendar,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 
 interface FooterProps {
   onBookingClick: () => void;
   salon?: any;
 }
 
-export const Footer = ({ onBookingClick, salon }: FooterProps) => {
-  const currentYear = new Date().getFullYear();
+export const Footer = ({ salon, onBookingClick }: FooterProps) => {
+  const [hoursOpen, setHoursOpen] = useState(false);
 
   // Use salon data or fallback
   const contactInfo = {
-    address: salon?.address || '123 Beauty Street, Downtown, City 12345',
     phone: salon?.phone || '(555) 123-4567',
-    email: salon?.booking_email || 'hello@bloombeauty.com',
-    hours: {
-      weekdays: 'Mon-Fri: 9:00 AM - 7:00 PM',
-      saturday: 'Saturday: 9:00 AM - 6:00 PM',
-      sunday: 'Sunday: 10:00 AM - 5:00 PM',
-    },
+    address: salon?.address || '123 Beauty Lane, City, State 12345'
   };
+
+  // Parse working_hours from the salon object
+  const businessHours = salon?.working_hours
+    ? salon.working_hours.split('|').map(item => {
+        const [day, ...hoursArr] = item.split(':');
+        return {
+          day: day.trim(),
+          time: hoursArr.join(':').trim(),
+        };
+      })
+    : [];
 
   const services = [
     'Hair Styling & Cuts',
@@ -164,22 +170,35 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
                   </a>
                 </div>
                 
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                  <a 
-                    href={`mailto:${contactInfo.email}`}
-                    className="text-white/80 hover:text-primary transition-colors"
-                  >
-                    {contactInfo.email}
-                  </a>
-                </div>
-                
                 <div className="flex items-start space-x-3">
                   <Clock className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="text-white/80 text-sm">
-                    <div>{contactInfo.hours.weekdays}</div>
-                    <div>{contactInfo.hours.saturday}</div>
-                    <div>{contactInfo.hours.sunday}</div>
+                  <div className="w-full">
+                    {businessHours.length > 0 && (
+                      <div>
+                        <button
+                          type="button"
+                          className="w-full flex justify-between items-center px-3 py-2 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-200 group"
+                          onClick={() => setHoursOpen(o => !o)}
+                        >
+                          <span className="text-white/90 text-sm font-body font-medium">Business Hours</span>
+                          <ChevronDown className={`w-4 h-4 text-white/70 transition-transform duration-200 ${hoursOpen ? 'rotate-180' : ''} group-hover:text-white/90`} />
+                        </button>
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${hoursOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                          <div className="bg-white/5 rounded-lg border border-white/10 p-3">
+                            <div className="space-y-2">
+                              {businessHours.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center py-1">
+                                  <span className="text-white/70 text-sm font-body">{item.day}</span>
+                                  <span className={`text-sm font-body font-medium ${item.time === 'Closed' ? 'text-red-400' : 'text-white/90'}`}>
+                                    {item.time}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -204,7 +223,7 @@ export const Footer = ({ onBookingClick, salon }: FooterProps) => {
         <div className="py-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="text-white/60 text-sm text-center md:text-left">
-              © {currentYear} Bloom Beauty Salon. All rights reserved.
+              © {new Date().getFullYear()} Bloom Beauty Salon. All rights reserved.
             </div>
             
             <div className="flex items-center space-x-6 text-sm text-white/60">

@@ -7,6 +7,7 @@ import { Salon } from '@/types/salon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { FileText, Calendar, Users, CheckCircle, MessageSquare } from 'lucide-react';
+import { BookingModal } from '@/components/booking/BookingModal';
 
 const TosSection = ({ icon, title, children }) => (
   <Card className="mb-8 border-primary/20">
@@ -26,16 +27,54 @@ const TermsOfService = () => {
   const { slug } = useParams<{ slug: string }>();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+  const [services, setServices] = useState([]);
+  const [stylists, setStylists] = useState([]);
 
   useEffect(() => {
     const fetchSalon = async () => {
       if (!slug) return;
-      const { data } = await supabase.from('salons').select('*').eq('slug', slug).single();
-      setSalon(data);
-      setLoading(false);
+      try {
+        // Fetch salon by slug
+        const { data: salonData, error: salonError } = await supabase
+          .from('salons')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (salonError || !salonData) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch services and stylists for booking modal
+        const [servicesResult, stylistsResult] = await Promise.all([
+          supabase.from('services').select('*').eq('salon_id', salonData.id),
+          supabase.from('stylists').select('*').eq('salon_id', salonData.id)
+        ]);
+
+        setSalon(salonData);
+        setServices(servicesResult.data || []);
+        setStylists(stylistsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching salon data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchSalon();
   }, [slug]);
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!salon) return <div className="min-h-screen flex items-center justify-center">Salon not found.</div>;
@@ -45,7 +84,7 @@ const TermsOfService = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
+      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => handleBookingClick()} />
       <div className="container max-w-4xl mx-auto py-12 px-4 md:px-6 pt-24">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
@@ -100,9 +139,10 @@ const TermsOfService = () => {
             </p>
             <div className="mt-3 p-4 bg-muted rounded-md">
               <p className="font-medium">{salonName}</p>
-              <p>Email: {salon.booking_email || 'info@bloombeautysalon.com'}</p>
-              <p>Phone: {salon.phone || '(555) 123-4567'}</p>
-              <p>Address: {salon.address || '123 Beauty Lane, Styleville, ST 12345'}</p>
+              <div className="space-y-2">
+                <p>Address: {salon.address || '123 Beauty Lane, City, State 12345'}</p>
+                <p>Phone: {salon.phone || '(555) 123-4567'}</p>
+              </div>
             </div>
           </TosSection>
         </div>
@@ -118,7 +158,15 @@ const TermsOfService = () => {
           </p>
         </div>
       </div>
-      <Footer salon={salon} onBookingClick={() => {}} />
+      <Footer salon={salon} onBookingClick={() => handleBookingClick()} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+        services={services}
+        stylists={stylists}
+        salon={salon}
+      />
     </div>
   );
 };

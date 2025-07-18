@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Heart, Award, Users, Star, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { BookingModal } from '@/components/booking/BookingModal';
 
 const ValueCard = ({ icon, title, description }) => (
   <Card className="border-none shadow-sm">
@@ -23,23 +24,61 @@ const About = () => {
   const { slug } = useParams<{ slug: string }>();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
+  const [services, setServices] = useState([]);
+  const [stylists, setStylists] = useState([]);
 
   useEffect(() => {
     const fetchSalon = async () => {
       if (!slug) return;
-      const { data } = await supabase.from('salons').select('*').eq('slug', slug).single();
-      setSalon(data);
-      setLoading(false);
+      try {
+        // Fetch salon by slug
+        const { data: salonData, error: salonError } = await supabase
+          .from('salons')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (salonError || !salonData) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch services and stylists for booking modal
+        const [servicesResult, stylistsResult] = await Promise.all([
+          supabase.from('services').select('*').eq('salon_id', salonData.id),
+          supabase.from('stylists').select('*').eq('salon_id', salonData.id)
+        ]);
+
+        setSalon(salonData);
+        setServices(servicesResult.data || []);
+        setStylists(stylistsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching salon data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchSalon();
   }, [slug]);
+
+  const handleBookingClick = (serviceId?: string) => {
+    setPreselectedServiceId(serviceId);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!salon) return <div className="min-h-screen flex items-center justify-center">Salon not found.</div>;
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => {}} />
+      <Navbar salonName={salon.name} slug={salon.slug} onBookingClick={() => handleBookingClick()} />
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="mt-24"></div>
@@ -173,16 +212,17 @@ const About = () => {
                   Book your appointment today and discover why our clients keep coming back.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <a href={slug ? `/${slug}/booking` : '/booking'}>
-                    <button className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors">
-                      Book Now
-                    </button>
-                  </a>
-                  <a href={slug ? `/${slug}/contact` : '/contact'}>
-                    <button className="border border-input bg-background px-6 py-3 rounded-md font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
-                      Contact Us
-                    </button>
-                  </a>
+                  <button 
+                    className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors"
+                    onClick={() => handleBookingClick()}
+                  >
+                    Book Appointment
+                  </button>
+                  <button 
+                    className="border border-input bg-background px-6 py-3 rounded-md font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    View Services
+                  </button>
                 </div>
               </div>
               <div className="hidden md:block">
@@ -196,7 +236,15 @@ const About = () => {
           </div>
         </div>
       </section>
-      <Footer salon={salon} onBookingClick={() => {}} />
+      <Footer salon={salon} onBookingClick={() => handleBookingClick()} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBooking}
+        preselectedServiceId={preselectedServiceId}
+        services={services}
+        stylists={stylists}
+        salon={salon}
+      />
     </div>
   );
 };

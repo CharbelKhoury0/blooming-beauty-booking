@@ -16,6 +16,7 @@ export interface Salon {
   socials?: Json;
   created_at: string;
   updated_at: string;
+  working_hours?: string;
 }
 
 export interface Service {

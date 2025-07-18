@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
 import type { BookingData } from '../BookingModal';
+import { supabase } from '@/integrations/supabase/client';
 
 // CMS-ready time slot data structure
 interface TimeSlot {
@@ -50,14 +51,48 @@ interface DateTimeSelectionProps {
 
 export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, selectedTime, setSelectedTime }: DateTimeSelectionProps) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch bookings and filter time slots when stylist or date changes
+  useEffect(() => {
+    const fetchAndFilterTimeSlots = async () => {
+      if (!selectedDate || !bookingData.stylist) {
+        setTimeSlots([]);
+        return;
+      }
+      setLoading(true);
+      // Format date as YYYY-MM-DD
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      // Find stylist ID (assume stylist is ID or name)
+      let stylistId = bookingData.stylist;
+      if (bookingData.salon?.stylists) {
+        const stylistObj = bookingData.salon.stylists.find(
+          s => s.id === bookingData.stylist || s.name === bookingData.stylist
+        );
+        if (stylistObj) stylistId = stylistObj.id;
+      }
+      // Fetch bookings for this stylist and date
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('booking_time')
+        .eq('stylist_id', stylistId)
+        .eq('booking_date', formattedDate);
+      const bookedTimes = bookings ? bookings.map(b => b.booking_time) : [];
+      // Generate all possible time slots
+      const allSlots = generateTimeSlots(selectedDate).map(slot => ({
+        ...slot,
+        available: !bookedTimes.includes(slot.time),
+      }));
+      setTimeSlots(allSlots);
+      setLoading(false);
+    };
+    fetchAndFilterTimeSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, bookingData.stylist]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     setSelectedTime(undefined); // Reset time when date changes
-    
-    if (date) {
-      setTimeSlots(generateTimeSlots(date));
-    }
   };
 
   const handleTimeSelect = (time: string) => {
@@ -88,26 +123,26 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-8">
         {/* Calendar */}
-        <div>
+        <div className="w-[320px] flex flex-col items-center justify-center">
           <h4 className="font-semibold text-foreground mb-4 flex items-center">
             <CalendarIcon className="w-4 h-4 mr-2" />
             Choose Date
           </h4>
-          <Card className="p-4">
+          <Card className="p-4 flex items-center justify-center">
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
               disabled={disabledDays}
-              className="rounded-md border-0"
+              className="rounded-md border-0 min-w-[260px] min-h-[320px]"
             />
           </Card>
         </div>
 
         {/* Time Slots */}
-        <div>
+        <div className="min-w-[220px]">
           <h4 className="font-semibold text-foreground mb-4 flex items-center">
             <Clock className="w-4 h-4 mr-2" />
             Available Times
@@ -118,7 +153,9 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
             )}
           </h4>
 
-          {!selectedDate ? (
+          {loading ? (
+            <div className="flex items-center justify-center p-8 text-muted-foreground">Loading...</div>
+          ) : !selectedDate ? (
             <Card className="p-8 text-center">
               <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -127,14 +164,15 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
             </Card>
           ) : (
             <Card className="p-4">
-              <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto min-w-0">
                 {timeSlots.map((slot) => (
                   <motion.button
+                    style={{ minWidth: 0 }}
                     key={slot.time}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.2 }}
-                    className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 w-full ${
                       !slot.available
                         ? 'bg-muted text-muted-foreground cursor-not-allowed'
                         : selectedTime === slot.time

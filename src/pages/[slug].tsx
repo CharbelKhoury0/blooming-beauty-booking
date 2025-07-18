@@ -9,6 +9,7 @@ import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { Footer } from '@/components/layout/Footer';
 import { BookingModal } from '@/components/booking/BookingModal';
 import { SalonData } from '@/types/salon';
+import { FAQSection } from '@/components/sections/FAQSection';
 
 const SalonPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -110,7 +111,8 @@ const SalonPage = () => {
           slug={salon.slug}
         />
         <AboutSection salon={salon} />
-        <TestimonialsSection testimonials={testimonials} />
+        <TestimonialsSection testimonials={testimonials} salon={salon} />
+        <FAQSection />
       </main>
       
       <Footer 
