@@ -80,7 +80,7 @@ export const BookingSummary = ({
 
     try {
       const result = await createBookingMutation.mutateAsync(bookingRequest);
-      toast.success(`Booking confirmed! Your confirmation number is ${result.confirmation_number}`);
+      toast.success(`Booking confirmed! Your confirmation number is ${result.confirmation_number}. Please save this number for your records.`);
       onBookingComplete();
     } catch (error) {
       console.error('Booking error:', error);

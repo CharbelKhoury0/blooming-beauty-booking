@@ -46,19 +46,6 @@ export const useCreateBooking = () => {
         throw new Error('Failed to create booking: ' + error.message);
       }
 
-      // Send confirmation email
-      try {
-        await supabase.functions.invoke('send-booking-confirmation', {
-          body: {
-            booking: data,
-            services: bookingData.services
-          }
-        });
-      } catch (emailError) {
-        console.warn('Failed to send confirmation email:', emailError);
-        // Don't throw error for email failure - booking is still created
-      }
-
       return data;
     }
   });
