@@ -38,8 +38,8 @@ const DialogContent = React.forwardRef<
       className={cn(
         // Mobile: full screen, edge-to-edge, no border radius, no max-width, small padding
         "fixed inset-0 z-50 grid w-full h-full max-w-none max-h-none rounded-none p-2 gap-4 border bg-background shadow-lg duration-200",
-        // Desktop (md+): centered, max-w-lg, rounded, p-6, translate to center
-        "md:left-[50%] md:top-[50%] md:translate-x-[-50%] md:translate-y-[-50%] md:w-full md:max-w-lg md:h-auto md:max-h-[90vh] md:rounded-lg md:p-6",
+        // Desktop (md+): centered, max-w-2xl, rounded, p-6, translate to center
+        "md:left-[50%] md:top-[50%] md:translate-x-[-50%] md:translate-y-[-50%] md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-lg md:p-6",
         // Animations and state
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
         className
