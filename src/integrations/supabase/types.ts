@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          confirmation_number: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_notes: string | null
+          customer_phone: string
+          id: string
+          salon_id: string
+          services: Json
+          status: string
+          stylist_id: string | null
+          stylist_name: string
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          confirmation_number: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_notes?: string | null
+          customer_phone: string
+          id?: string
+          salon_id: string
+          services: Json
+          status?: string
+          stylist_id?: string | null
+          stylist_name: string
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          confirmation_number?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_notes?: string | null
+          customer_phone?: string
+          id?: string
+          salon_id?: string
+          services?: Json
+          status?: string
+          stylist_id?: string | null
+          stylist_name?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_stylist_id_fkey"
+            columns: ["stylist_id"]
+            isOneToOne: false
+            referencedRelation: "stylists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salons: {
         Row: {
           about: string | null
@@ -196,7 +268,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_stylist_availability: {
+        Args: {
+          p_stylist_id: string
+          p_date: string
+          p_time: string
+          p_duration_minutes?: number
+        }
+        Returns: boolean
+      }
+      generate_confirmation_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

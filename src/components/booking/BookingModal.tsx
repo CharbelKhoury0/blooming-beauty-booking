@@ -15,6 +15,7 @@ export interface BookingData {
   date?: Date;
   time?: string;
   totalPrice: number;
+  salon?: any;
   contactInfo?: {
     name: string;
     email: string;
@@ -224,11 +225,10 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                         setSelectedTime={setSelectedTime}
                       />
                     ) : (
-                      <CurrentStepComponent
-                        bookingData={bookingData}
+                      <BookingSummary
+                        bookingData={{ ...bookingData, salon }}
                         onComplete={handleStepComplete}
-                        {...(currentStep === 4 && { onBookingComplete: handleBookingComplete })}
-                        {...(currentStep === 4 && { salon })}
+                        onBookingComplete={handleBookingComplete}
                       />
                     )}
                   </motion.div>

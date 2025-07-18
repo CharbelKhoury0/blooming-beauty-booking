@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { CalendarIcon, Clock, User, Mail, Phone, MessageSquare, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
+import { useCreateBooking } from '@/hooks/useBookings';
+import { toast } from 'sonner';
 import type { BookingData } from '../BookingModal';
 
 interface BookingSummaryProps {
@@ -28,7 +30,7 @@ export const BookingSummary = ({
     notes: bookingData.contactInfo?.notes || '',
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createBookingMutation = useCreateBooking();
 
   const handleInputChange = (field: string, value: string) => {
     const updatedInfo = { ...contactInfo, [field]: value };
@@ -40,14 +42,50 @@ export const BookingSummary = ({
     });
   };
 
+  const calculateTotal = () => {
+    return bookingData.services.reduce((total, service) => {
+      const price = parseFloat(service.price.replace('$', ''));
+      return total + price;
+    }, 0);
+  };
+
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    onBookingComplete();
+    if (!bookingData.salon || !bookingData.date || !bookingData.time) {
+      toast.error('Missing booking information. Please go back and complete all steps.');
+      return;
+    }
+
+    const selectedStylist = bookingData.salon.stylists?.find(s => s.name === bookingData.stylist) || 
+                          bookingData.salon.stylists?.[0];
+
+    if (!selectedStylist) {
+      toast.error('Stylist information not available. Please go back and select a stylist.');
+      return;
+    }
+
+    const bookingRequest = {
+      salon_id: bookingData.salon.id,
+      customer_name: contactInfo.name,
+      customer_email: contactInfo.email,
+      customer_phone: contactInfo.phone,
+      customer_notes: contactInfo.notes || undefined,
+      booking_date: format(bookingData.date, 'yyyy-MM-dd'),
+      booking_time: bookingData.time,
+      stylist_id: selectedStylist.id,
+      stylist_name: selectedStylist.name,
+      services: bookingData.services,
+      total_price: calculateTotal(),
+      status: 'pending' as const
+    };
+
+    try {
+      const result = await createBookingMutation.mutateAsync(bookingRequest);
+      toast.success(`Booking confirmed! Your confirmation number is ${result.confirmation_number}`);
+      onBookingComplete();
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
+    }
   };
 
   const isValid = contactInfo.name && contactInfo.email && contactInfo.phone;
@@ -122,7 +160,7 @@ export const BookingSummary = ({
             {/* Total */}
             <div className="flex justify-between items-center text-lg font-semibold">
               <span className="text-foreground">Total</span>
-              <span className="text-primary">${bookingData.totalPrice}</span>
+              <span className="text-primary">${calculateTotal().toFixed(2)}</span>
             </div>
           </Card>
         </div>
@@ -217,12 +255,12 @@ export const BookingSummary = ({
       {/* Main Confirm Booking Button at the bottom */}
       <Button
         onClick={handleSubmit}
-        disabled={!isValid || isSubmitting}
+        disabled={!isValid || createBookingMutation.isPending}
         className="w-full mt-6"
         variant="luxury"
         size="lg"
       >
-        {isSubmitting ? (
+        {createBookingMutation.isPending ? (
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
