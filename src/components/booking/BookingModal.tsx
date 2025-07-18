@@ -245,12 +245,12 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                   variant="outline"
                   onClick={handlePrev}
                   disabled={currentStep === 1}
-                  className="flex items-center space-x-2 w-auto sm:w-full"
+                 className="flex items-center space-x-2 w-auto sm:w-full"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Previous</span>
                 </Button>
-                <div className="text-sm text-muted-foreground sm:text-xs">
+               <div className="text-sm text-muted-foreground sm:text-xs">
                   Step {currentStep} of {steps.length}
                 </div>
                 {currentStep < steps.length && (
@@ -272,7 +272,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                       }
                     }}
                     disabled={currentStep === 1 ? selectedServices.length === 0 : currentStep === 2 ? !selectedStylist : currentStep === 3 ? !(selectedDate && selectedTime) : !canProceed()}
-                    className="flex items-center space-x-2 w-auto sm:w-full"
+                   className="flex items-center space-x-2 w-auto sm:w-full"
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />
