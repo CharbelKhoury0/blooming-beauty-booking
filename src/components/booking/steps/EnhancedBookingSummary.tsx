@@ -69,15 +69,7 @@ export const EnhancedBookingSummary = ({
         total_price: bookingData.totalPrice,
         status: 'pending',
         number_of_people: bookingData.numberOfPeople,
-        people_data: bookingData.peopleBookings.map(person => ({
-          person_name: person.personName,
-          services: person.services.map(s => ({
-            service_id: s.service.id,
-            service_name: s.service.name,
-            stylist_id: s.stylist?.id,
-            stylist_name: s.stylist?.name || '',
-          })),
-        })),
+        // people_data removed
       };
       // Insert booking
       await createBooking.mutateAsync(bookingRequest);

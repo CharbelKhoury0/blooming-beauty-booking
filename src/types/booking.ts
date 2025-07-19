@@ -67,15 +67,6 @@ export interface BookingRequest {
   total_price: number;
   status: 'pending';
   number_of_people: number;
-  people_data: Array<{
-    person_name: string;
-    services: Array<{
-      service_id: string;
-      service_name: string;
-      stylist_id?: string;
-      stylist_name: string;
-    }>;
-  }>;
 }
 
 export interface BookingResponse {
