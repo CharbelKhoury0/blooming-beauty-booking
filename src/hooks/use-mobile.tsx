@@ -17,3 +17,19 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+// Performance optimization hook for mobile devices
+export function usePerformanceMode() {
+  const [isPerformanceMode, setIsPerformanceMode] = React.useState(false)
+
+  React.useEffect(() => {
+    // Check if device is mobile or has reduced motion preference
+    const isMobile = window.innerWidth < MOBILE_BREAKPOINT
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isLowEndDevice = navigator.hardwareConcurrency <= 4 // 4 cores or less
+    
+    setIsPerformanceMode(isMobile || prefersReducedMotion || isLowEndDevice)
+  }, [])
+
+  return isPerformanceMode
+}

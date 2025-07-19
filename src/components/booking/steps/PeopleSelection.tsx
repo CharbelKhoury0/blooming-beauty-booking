@@ -12,16 +12,13 @@ interface PeopleSelectionProps {
 }
 
 export const PeopleSelection = ({ bookingData, onUpdate }: PeopleSelectionProps) => {
-  const [numberOfPeople, setNumberOfPeople] = useState(bookingData.numberOfPeople || 1);
-  const [peopleBookings, setPeopleBookings] = useState<PersonBookingData[]>(
-    bookingData.peopleBookings.length > 0 
-      ? bookingData.peopleBookings 
-      : [{ personName: '', services: [] }]
-  );
+  const numberOfPeople = bookingData.numberOfPeople || 1;
+  const peopleBookings = bookingData.peopleBookings.length > 0 
+    ? bookingData.peopleBookings 
+    : [{ personName: '', services: [] }];
 
   const updateNumberOfPeople = (count: number) => {
     const newCount = Math.max(1, Math.min(6, count)); // Limit between 1-6 people
-    setNumberOfPeople(newCount);
     
     const newPeopleBookings = [...peopleBookings];
     
@@ -35,7 +32,6 @@ export const PeopleSelection = ({ bookingData, onUpdate }: PeopleSelectionProps)
       newPeopleBookings.splice(newCount);
     }
     
-    setPeopleBookings(newPeopleBookings);
     onUpdate({ 
       numberOfPeople: newCount, 
       peopleBookings: newPeopleBookings 
@@ -45,7 +41,6 @@ export const PeopleSelection = ({ bookingData, onUpdate }: PeopleSelectionProps)
   const updatePersonName = (index: number, name: string) => {
     const updated = [...peopleBookings];
     updated[index] = { ...updated[index], personName: name };
-    setPeopleBookings(updated);
     onUpdate({ peopleBookings: updated });
   };
 
@@ -99,25 +94,26 @@ export const PeopleSelection = ({ bookingData, onUpdate }: PeopleSelectionProps)
           className="space-y-4"
         >
           <h4 className="font-semibold text-foreground text-center">
-            Who's coming? (Optional)
+            Who's coming? <span className="text-red-500">*</span>
           </h4>
           <div className="grid gap-3 max-w-md mx-auto">
             {peopleBookings.map((person, index) => (
               <div key={index} className="space-y-2">
                 <Label className="text-sm font-medium">
-                  {index === 0 ? 'Main Contact' : `Person ${index + 1}`}
+                  {index === 0 ? 'Main Contact' : `Person ${index + 1}`} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   placeholder={index === 0 ? 'Your name' : `Person ${index + 1}'s name`}
                   value={person.personName}
                   onChange={(e) => updatePersonName(index, e.target.value)}
+                  required
                   className="w-full"
                 />
               </div>
             ))}
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            You can assign services to specific people in the next steps.
+            Names are required to proceed. You can assign services to specific people in the next steps.
           </p>
         </motion.div>
       )}

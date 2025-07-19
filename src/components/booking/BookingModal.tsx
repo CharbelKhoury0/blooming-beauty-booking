@@ -38,10 +38,26 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
       notes: ''
     }
   });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
   const [isComplete, setIsComplete] = useState(false);
 
   const handleStepComplete = (data: Partial<BookingData>) => {
     setBookingData(prev => ({ ...prev, ...data }));
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setBookingData(prev => ({ ...prev, date: date.toISOString() }));
+    }
+  };
+
+  const handleTimeChange = (time: string | undefined) => {
+    setSelectedTime(time);
+    if (time) {
+      setBookingData(prev => ({ ...prev, time }));
+    }
   };
 
   const handleNext = () => {
@@ -74,7 +90,11 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return bookingData.numberOfPeople > 0;
+        return bookingData.numberOfPeople > 0 && 
+          (bookingData.numberOfPeople === 1 || 
+           bookingData.peopleBookings.every(person => 
+             person.personName && person.personName.trim() !== ''
+           ));
       case 2:
         return bookingData.peopleBookings.some(person => person.services.length > 0);
       case 3:
@@ -105,8 +125,9 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-4xl max-h-[95vh] p-0 flex flex-col overflow-hidden
-          sm:max-w-full sm:w-full sm:h-screen sm:rounded-none sm:max-h-none"
+        className="max-w-5xl max-h-[90vh] p-0 flex flex-col overflow-hidden
+          sm:max-w-full sm:w-full sm:h-screen sm:rounded-none sm:max-h-none
+          md:max-w-5xl md:w-[80vw] md:h-[85vh]"
       >
         <AnimatePresence mode="wait">
           {isComplete ? (
@@ -146,25 +167,26 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
               className="flex flex-col flex-1 min-h-0"
             >
               {/* Header with better mobile spacing */}
-              <DialogHeader className="px-4 py-3 border-b border-border shrink-0 sm:px-3 sm:py-2">
+              <DialogHeader className="px-4 py-3 border-b border-border shrink-0 sm:px-3 sm:py-2 md:px-10 md:py-6">
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="text-lg font-heading font-semibold sm:text-base">
+                  <DialogTitle className="text-lg font-heading font-semibold sm:text-base md:text-2xl">
                     Book Your Appointment
                   </DialogTitle>
                   <Button variant="ghost" size="icon" onClick={onClose} className="sm:w-8 sm:h-8">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
+                <div className="h-4 sm:h-2 md:h-6"></div>
                 {/* Fixed Progress Bar with proper scrolling */}
-                <div className="overflow-x-auto scrollbar-hide mt-3 sm:mt-2">
-                  <div className="flex items-center justify-between min-w-max sm:min-w-[400px] px-2">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <div className="flex items-center justify-between min-w-max sm:min-w-[400px] px-2 md:px-4">
                     {steps.map((step, index) => (
                       <div
                         key={step.id}
                         className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''} whitespace-nowrap`}
                       >
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors shrink-0 ${
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors shrink-0 md:w-8 md:h-8 md:text-sm ${
                             step.id <= currentStep
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted text-muted-foreground'
@@ -173,7 +195,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                           {step.id}
                         </div>
                         <span
-                          className={`ml-1.5 text-xs font-medium ${
+                          className={`ml-1.5 text-xs font-medium md:text-sm md:ml-2 ${
                             step.id <= currentStep ? 'text-primary' : 'text-muted-foreground'
                           } sm:text-[10px]`}
                         >
@@ -181,7 +203,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                         </span>
                         {index < steps.length - 1 && (
                           <div
-                            className={`flex-1 h-0.5 mx-2 transition-colors ${
+                            className={`flex-1 h-0.5 mx-2 transition-colors md:h-1 md:mx-3 ${
                               step.id < currentStep ? 'bg-primary' : 'bg-muted'
                             } min-w-[16px]`}
                           />
@@ -195,7 +217,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
               {/* Improved Scrollable Content */}
               <div
                 ref={contentRef}
-                className="flex-1 overflow-y-auto px-4 py-3 sm:px-3 sm:py-2"
+                className="flex-1 overflow-y-auto px-4 py-3 sm:px-3 sm:py-2 md:px-10 md:py-8"
               >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -209,26 +231,35 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                       bookingData={bookingData}
                       onUpdate={handleStepComplete}
                       {...(currentStep === 2 && { preselectedServiceId })}
-                      {...(currentStep === 4 && { onBookingComplete: handleBookingComplete })}
+                      {...(currentStep === 4 && { 
+                        onComplete: handleStepComplete,
+                        onBookingComplete: handleBookingComplete 
+                      })}
+                      {...(currentStep === 3 && {
+                        selectedDate,
+                        setSelectedDate: handleDateChange,
+                        selectedTime,
+                        setSelectedTime: handleTimeChange,
+                      })}
                     />
                   </motion.div>
                 </AnimatePresence>
               </div>
               
               {/* Improved Sticky Footer */}
-              <div className="flex items-center justify-between px-4 py-3 bg-background border-t border-border shrink-0 sm:px-3 sm:py-2 sm:flex-col sm:gap-2">
+              <div className="flex items-center justify-between px-4 py-3 bg-background border-t border-border shrink-0 sm:px-3 sm:py-2 sm:flex-col sm:gap-2 md:px-10 md:py-6">
                 {currentStep > 1 ? (
                   <Button
                     variant="outline"
                     onClick={handlePrev}
-                    className="flex items-center space-x-2 sm:w-full sm:order-2"
+                    className="flex items-center space-x-2 sm:w-full sm:order-2 md:px-8 md:py-3"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span>Previous</span>
                   </Button>
                 ) : <div></div>}
                 
-                <div className="text-xs text-muted-foreground sm:order-1">
+                <div className="text-xs text-muted-foreground sm:order-1 md:text-sm">
                   Step {currentStep} of {steps.length}
                 </div>
                 
@@ -237,7 +268,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                     variant="luxury"
                     onClick={handleNext}
                     disabled={!canProceed()}
-                    className="flex items-center space-x-2 sm:w-full sm:order-3"
+                    className="flex items-center space-x-2 sm:w-full sm:order-3 md:px-8 md:py-3"
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />

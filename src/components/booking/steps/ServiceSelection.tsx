@@ -124,9 +124,9 @@ export const ServiceSelection = ({
           return (
             <motion.div
               key={service.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
               className={`card-luxury p-4 cursor-pointer transition-all duration-300 ${
                 isSelected ? 'ring-2 ring-primary shadow-luxury' : 'hover:shadow-soft'
               }`}

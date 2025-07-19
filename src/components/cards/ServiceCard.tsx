@@ -24,8 +24,8 @@ export const ServiceCard = ({ service, onBookingClick }: ServiceCardProps) => {
   return (
     <motion.div
       className="card-luxury p-6 group cursor-pointer h-full"
-      whileHover={{ y: -5, scale: 1.02 }}
-      transition={{ duration: 0.3 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
       onClick={() => onBookingClick?.(service.id)}
     >
       {/* Header */}

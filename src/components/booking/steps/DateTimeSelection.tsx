@@ -56,28 +56,18 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
   // Fetch bookings and filter time slots when stylist or date changes
   useEffect(() => {
     const fetchAndFilterTimeSlots = async () => {
-      if (!selectedDate || !bookingData.stylist) {
+      if (!selectedDate) {
         setTimeSlots([]);
         return;
       }
       setLoading(true);
       // Format date as YYYY-MM-DD
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      // Find stylist ID (assume stylist is ID or name)
-      let stylistId = bookingData.stylist;
-      if (bookingData.salon?.stylists) {
-        const stylistObj = bookingData.salon.stylists.find(
-          s => s.id === bookingData.stylist || s.name === bookingData.stylist
-        );
-        if (stylistObj) stylistId = stylistObj.id;
-      }
-      // Fetch bookings for this stylist and date
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select('booking_time')
-        .eq('stylist_id', stylistId)
-        .eq('booking_date', formattedDate);
-      const bookedTimes = bookings ? bookings.map(b => b.booking_time) : [];
+      
+      // For now, generate time slots without checking stylist availability
+      // In a real implementation, you would check stylist availability here
+      const bookedTimes: string[] = [];
+      
       // Generate all possible time slots
       const allSlots = generateTimeSlots(selectedDate).map(slot => ({
         ...slot,
@@ -88,7 +78,7 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
     };
     fetchAndFilterTimeSlots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, bookingData.stylist]);
+  }, [selectedDate]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -229,7 +219,9 @@ export const DateTimeSelection = ({ bookingData, selectedDate, setSelectedDate, 
             <div>
               <span className="text-muted-foreground">Services:</span>
               <div className="font-medium text-foreground">
-                {bookingData.services.map(s => s.name).join(', ')}
+                {bookingData.peopleBookings.flatMap(person => 
+                  person.services.map(s => s.service.name)
+                ).join(', ')}
               </div>
             </div>
             <div>

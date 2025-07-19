@@ -35,9 +35,9 @@ export const AboutSection = ({ salon }: AboutSectionProps) => {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <div className="inline-flex items-center space-x-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
@@ -53,28 +53,26 @@ export const AboutSection = ({ salon }: AboutSectionProps) => {
               {salon?.about || "For over a decade, Bloom Beauty has been the trusted destination for luxury beauty services. We combine cutting-edge techniques with personalized care to help you look and feel your absolute best."}
             </p>
 
-            <div className="grid sm:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-8">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
                   viewport={{ once: true }}
-                  className="group"
+                  className="flex items-start space-x-4"
                 >
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <feature.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-2">
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <feature.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
                 </motion.div>
               ))}

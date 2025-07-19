@@ -134,9 +134,7 @@ export const EnhancedServiceSelection = ({
   preselectedServiceId 
 }: EnhancedServiceSelectionProps) => {
   const [activePersonIndex, setActivePersonIndex] = useState(0);
-  const [peopleBookings, setPeopleBookings] = useState<PersonBookingData[]>(
-    bookingData.peopleBookings || []
-  );
+  const peopleBookings = bookingData.peopleBookings || [];
 
   useEffect(() => {
     if (preselectedServiceId && peopleBookings.length > 0) {
@@ -147,7 +145,6 @@ export const EnhancedServiceSelection = ({
         if (!existingService) {
           if (!updated[0]) updated[0] = { personName: '', services: [] };
           updated[0].services.push({ service: preselectedService });
-          setPeopleBookings(updated);
           updateTotalPrice(updated);
         }
       }
@@ -165,7 +162,6 @@ export const EnhancedServiceSelection = ({
       person.services.push({ service });
     }
     
-    setPeopleBookings(updated);
     updateTotalPrice(updated);
   };
 
@@ -174,7 +170,6 @@ export const EnhancedServiceSelection = ({
     const stylist = availableStylists.find(s => s.id === stylistId);
     if (stylist) {
       updated[personIndex].services[serviceIndex].stylist = stylist;
-      setPeopleBookings(updated);
       onUpdate({ peopleBookings: updated });
     }
   };
@@ -205,6 +200,9 @@ export const EnhancedServiceSelection = ({
         </h3>
         <p className="text-muted-foreground">
           Select services and assign stylists for each person.
+        </p>
+        <p className="text-sm text-red-500 mt-2">
+          * At least one service is required to proceed
         </p>
       </div>
 
@@ -246,9 +244,9 @@ export const EnhancedServiceSelection = ({
             return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
                 className={`card-luxury p-4 cursor-pointer transition-all duration-300 ${
                   isSelected ? 'ring-2 ring-primary shadow-luxury' : 'hover:shadow-soft'
                 }`}
@@ -295,7 +293,7 @@ export const EnhancedServiceSelection = ({
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 pt-4 border-t border-border"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <Label className="text-sm font-medium">Choose Stylist:</Label>
                       <Select
                         value={selectedService?.stylist?.id || ''}
@@ -304,12 +302,12 @@ export const EnhancedServiceSelection = ({
                           updateStylist(serviceIndex, activePersonIndex, value);
                         }}
                       >
-                        <SelectTrigger className="w-48 h-8 text-xs">
+                        <SelectTrigger className="w-full sm:w-48 h-10 text-sm">
                           <SelectValue placeholder="Select stylist..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60">
                           {availableStylists.map((stylist) => (
-                            <SelectItem key={stylist.id} value={stylist.id} className="text-xs">
+                            <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3">
                               {stylist.name}
                             </SelectItem>
                           ))}

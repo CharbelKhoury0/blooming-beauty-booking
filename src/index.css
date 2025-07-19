@@ -153,7 +153,7 @@
 
   /* Floating elements */
   .floating {
-    animation: floating 3s ease-in-out infinite;
+    animation: floating 6s ease-in-out infinite;
   }
 }
 
@@ -195,12 +195,37 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
   }
 }
 
 html, body {
   overflow-x: hidden;
+}
+
+/* Respect user's motion preferences for better performance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Optimize for mobile devices */
+@media (max-width: 768px) {
+  .floating {
+    animation: none !important;
+  }
+  
+  /* Reduce blur effects on mobile for better performance */
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    backdrop-filter: none !important;
+  }
 }
 
 /* Hide scrollbar but allow scrolling */
