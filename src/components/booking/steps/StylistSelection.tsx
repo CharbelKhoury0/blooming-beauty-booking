@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Star, Clock, Award, Users } from 'lucide-react';
-import type { BookingData } from '../BookingModal';
+import type { BookingData } from '@/types/booking';
 
 // CMS-ready stylist data structure
 export interface Stylist {

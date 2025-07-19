@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Clock, Plus, Minus } from 'lucide-react';
-import type { BookingData } from '../BookingModal';
+import type { BookingData } from '@/types/booking';
 import type { Service } from '@/components/sections/ServicesSection';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
-import type { BookingData } from '../BookingModal';
+import type { BookingData } from '@/types/booking';
 import { supabase } from '@/integrations/supabase/client';
 
 // CMS-ready time slot data structure

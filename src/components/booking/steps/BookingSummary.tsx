@@ -10,7 +10,7 @@ import { CalendarIcon, Clock, User, Mail, Phone, MessageSquare, CreditCard } fro
 import { format } from 'date-fns';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { toast } from 'sonner';
-import type { BookingData } from '../BookingModal';
+import type { BookingData } from '@/types/booking';
 
 interface BookingSummaryProps {
   bookingData: BookingData;
@@ -77,7 +77,17 @@ export const BookingSummary = ({
       stylist_name: stylistName,
       services: bookingData.services,
       total_price: calculateTotal(),
-      status: 'pending' as const
+      status: 'pending' as const,
+      number_of_people: 1, // Default for legacy bookings
+      people_data: [{ // Default single person data
+        person_name: contactInfo.name,
+        services: bookingData.services.map(service => ({
+          service_id: service.id,
+          service_name: service.name,
+          stylist_id: stylistId,
+          stylist_name: stylistName,
+        }))
+      }]
     };
 
     try {
