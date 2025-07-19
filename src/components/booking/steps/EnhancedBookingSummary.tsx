@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, User, Phone, Mail, MessageSquare, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { BookingData } from '@/types/booking';
+import { useCreateBooking } from '@/hooks/useBookings';
 
 interface EnhancedBookingSummaryProps {
   bookingData: BookingData;
@@ -28,6 +29,7 @@ export const EnhancedBookingSummary = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const createBooking = useCreateBooking();
 
   const updateContactInfo = (field: string, value: string) => {
     const updated = { ...contactInfo, [field]: value };
@@ -46,22 +48,48 @@ export const EnhancedBookingSummary = ({
     }
 
     setIsSubmitting(true);
-    
     try {
-      // For now, just simulate the booking process
-      // TODO: Implement actual booking creation when backend is ready
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Prepare booking data
+      const bookingRequest = {
+        salon_id: bookingData.salon?.id || '',
+        customer_name: contactInfo.name,
+        customer_email: contactInfo.email,
+        customer_phone: contactInfo.phone,
+        customer_notes: contactInfo.notes || '',
+        booking_date: bookingData.date || '',
+        booking_time: bookingData.time || '',
+        stylist_id: undefined, // You can enhance this to pick a main stylist if needed
+        stylist_name: '',
+        services: bookingData.peopleBookings.flatMap(person => person.services.map(s => ({
+          id: s.service.id,
+          name: s.service.name,
+          price: s.service.price,
+          duration: s.service.duration,
+        }))),
+        total_price: bookingData.totalPrice,
+        status: 'pending',
+        number_of_people: bookingData.numberOfPeople,
+        people_data: bookingData.peopleBookings.map(person => ({
+          person_name: person.personName,
+          services: person.services.map(s => ({
+            service_id: s.service.id,
+            service_name: s.service.name,
+            stylist_id: s.stylist?.id,
+            stylist_name: s.stylist?.name || '',
+          })),
+        })),
+      };
+      // Insert booking
+      await createBooking.mutateAsync(bookingRequest);
       toast({
         title: "Booking Confirmed!",
         description: "Your appointment has been successfully booked. You'll receive a confirmation email shortly.",
       });
-      
       onBookingComplete();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Booking Failed",
-        description: "There was an error processing your booking. Please try again.",
+        description: error.message || "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
     } finally {
