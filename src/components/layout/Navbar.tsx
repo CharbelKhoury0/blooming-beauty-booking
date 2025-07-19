@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Calendar, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -106,39 +106,76 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug, alway
         </div>
 
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <motion.div
-            className="md:hidden bg-white/95 backdrop-blur-md rounded-lg mt-2 p-4 shadow-soft"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <div className="space-y-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="block text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Button
-                variant="luxury"
-                size="lg"
-                onClick={() => {
-                  onBookingClick();
-                  setIsMobileMenuOpen(false);
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              {/* Backdrop with blur effect */}
+              <motion.div
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
+              {/* Mobile Menu Content */}
+              <motion.div
+                className="md:hidden fixed top-0 right-0 h-full w-80 bg-white/95 backdrop-blur-md shadow-soft z-50 p-6"
+                initial={{ x: 320 }}
+                animate={{ x: 0 }}
+                exit={{ x: 320 }}
+                transition={{ 
+                  type: "tween",
+                  duration: 0.3,
+                  ease: "easeOut"
                 }}
-                className="w-full font-medium"
               >
-                <Calendar className="w-4 h-4" />
-                Book Now
-              </Button>
-            </div>
-          </motion.div>
-        )}
+                <div className="space-y-6">
+                  {/* Close button */}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-foreground hover:text-primary"
+                    >
+                      <X className="w-6 h-6" />
+                    </Button>
+                  </div>
+                  
+                  {/* Navigation items */}
+                  <div className="space-y-4">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="block text-foreground hover:text-primary transition-colors duration-300 font-medium py-3 text-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  </div>
+                  
+                  {/* CTA Button */}
+                  <div className="pt-4">
+                  <Button
+                    variant="luxury"
+                    size="lg"
+                    onClick={() => {
+                      onBookingClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full font-medium"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Book Now
+                  </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </motion.nav>
   );
