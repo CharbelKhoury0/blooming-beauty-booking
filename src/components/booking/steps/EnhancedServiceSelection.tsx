@@ -297,36 +297,38 @@ export const EnhancedServiceSelection = ({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 pt-4 border-t border-border"
+                    onClick={e => e.stopPropagation()}
+                    onTouchStart={e => e.stopPropagation()}
                   >
                     <div className="flex flex-col gap-3">
                       <Label className="text-sm font-medium text-foreground">
                         Choose Stylist: <span className="text-red-500">*</span>
                       </Label>
-                      
-                     <div className="relative">
-                      <Select
-                        value={selectedService?.stylist?.id || ''}
-                        onValueChange={(value) => {
-                          const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
-                          updateStylist(serviceIndex, activePersonIndex, value);
-                        }}
-                      >
-                        <SelectTrigger className="w-full h-12 text-sm border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
-                          <SelectValue placeholder="Select stylist..." />
-                        </SelectTrigger>
-                        <SelectContent 
-                          className="max-h-60"
+                      <div className="relative" onClick={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
+                        <Select
+                          value={selectedService?.stylist?.id || ''}
+                          onValueChange={(value) => {
+                            const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
+                            updateStylist(serviceIndex, activePersonIndex, value);
+                          }}
                         >
-                          {availableStylists.map((stylist) => (
-                            <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3 cursor-pointer">
-                              {stylist.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                     </div>
-                      
-                      <p className="text-xs text-muted-foreground">
+                          <SelectTrigger className="w-full h-12 text-sm border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
+                            <SelectValue placeholder="Select stylist..." />
+                          </SelectTrigger>
+                          <SelectContent 
+                            className="max-h-60"
+                            onClick={e => e.stopPropagation()}
+                            onTouchStart={e => e.stopPropagation()}
+                          >
+                            {availableStylists.map((stylist) => (
+                              <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3 cursor-pointer">
+                                {stylist.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
                         Select your preferred stylist or choose "Any Available Stylist" for the best match.
                       </p>
                     </div>
