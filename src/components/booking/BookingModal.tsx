@@ -169,37 +169,39 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                   </Button>
                 </div>
                 {/* Progress Bar */}
-                <div className="flex items-center justify-between mb-2 sm:flex-wrap sm:gap-y-2 sm:gap-x-1 sm:mb-1">
-                  {steps.map((step, index) => (
-                    <div
-                      key={step.id}
-                      className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''}`}
-                    >
+                <div className="overflow-x-auto scrollbar-hide mb-2 sm:mb-1">
+                  <div className="flex items-center justify-between min-w-max sm:min-w-[480px] sm:pr-4">
+                    {steps.map((step, index) => (
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                          step.id <= currentStep
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        } sm:w-7 sm:h-7`}
+                        key={step.id}
+                        className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''} whitespace-nowrap`}
                       >
-                        {step.id}
-                      </div>
-                      <span
-                        className={`ml-2 text-sm font-medium ${
-                          step.id <= currentStep ? 'text-primary' : 'text-muted-foreground'
-                        } sm:ml-1 sm:text-xs`}
-                      >
-                        {step.title}
-                      </span>
-                      {index < steps.length - 1 && (
                         <div
-                          className={`flex-1 h-0.5 mx-4 transition-colors ${
-                            step.id < currentStep ? 'bg-primary' : 'bg-muted'
-                          } sm:mx-1`}
-                        />
-                      )}
-                    </div>
-                  ))}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                            step.id <= currentStep
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground'
+                          } sm:w-7 sm:h-7 shrink-0`}
+                        >
+                          {step.id}
+                        </div>
+                        <span
+                          className={`ml-2 text-sm font-medium ${
+                            step.id <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                          } sm:ml-1 sm:text-xs`}
+                        >
+                          {step.title}
+                        </span>
+                        {index < steps.length - 1 && (
+                          <div
+                            className={`flex-1 h-0.5 mx-4 transition-colors ${
+                              step.id < currentStep ? 'bg-primary' : 'bg-muted'
+                            } sm:mx-2 min-w-[20px]`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </DialogHeader>
 
