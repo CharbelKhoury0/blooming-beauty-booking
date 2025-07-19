@@ -133,13 +133,15 @@ export const StylistSelection = ({ bookingData, selectedStylist, setSelectedStyl
                   ? 'opacity-50 cursor-not-allowed' 
                   : ''
               }`}
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation();
                 if (stylist.availability !== 'unavailable') {
                   handleStylistSelect(stylist.id);
                 }
               }}
               onKeyDown={e => {
                 if ((e.key === 'Enter' || e.key === ' ') && stylist.availability !== 'unavailable') {
+                  e.stopPropagation();
                   handleStylistSelect(stylist.id);
                 }
               }}
