@@ -25,6 +25,20 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug, alway
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Prevent body scrolling when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to restore scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
   const isHomePage = location.pathname === `/${slug}`;
 
   const navItems = [
@@ -111,15 +125,16 @@ export const Navbar = ({ onBookingClick, salonName = "Bloom Beauty", slug, alway
             <>
               {/* Backdrop with blur effect */}
               <motion.div
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden touch-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsMobileMenuOpen(false)}
+                style={{ touchAction: 'none' }}
               />
               {/* Mobile Menu Content */}
               <motion.div
-                className="md:hidden fixed top-0 right-0 h-full w-80 bg-white/95 backdrop-blur-md shadow-soft z-50 p-6"
+                className="md:hidden fixed top-0 right-0 h-full w-80 bg-white/95 backdrop-blur-md shadow-soft z-50 p-6 overflow-y-auto"
                 initial={{ x: 320 }}
                 animate={{ x: 0 }}
                 exit={{ x: 320 }}
