@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Clock, Plus, Minus, User, Users } from 'lucide-react';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 import type { BookingData, PersonBookingData, Service, Stylist } from '@/types/booking';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Mock services data
 const availableServices: Service[] = [
@@ -135,6 +136,7 @@ export const EnhancedServiceSelection = ({
 }: EnhancedServiceSelectionProps) => {
   const [activePersonIndex, setActivePersonIndex] = useState(0);
   const peopleBookings = bookingData.peopleBookings || [];
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (preselectedServiceId && peopleBookings.length > 0) {
@@ -202,7 +204,7 @@ export const EnhancedServiceSelection = ({
           Select services and assign stylists for each person.
         </p>
         <p className="text-sm text-red-500 mt-2">
-          * At least one service is required to proceed
+          * Every person must select at least one service to proceed
         </p>
       </div>
 
@@ -215,13 +217,18 @@ export const EnhancedServiceSelection = ({
               variant={activePersonIndex === index ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActivePersonIndex(index)}
-              className="relative"
+              className={`relative ${person.services.length === 0 ? 'ring-2 ring-red-500' : ''}`}
             >
               <User className="w-4 h-4 mr-1" />
               {person.personName || `Person ${index + 1}`}
               {person.services.length > 0 && (
                 <Badge className="ml-2 h-5 min-w-5 text-xs">
                   {person.services.length}
+                </Badge>
+              )}
+              {person.services.length === 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 min-w-5 text-xs">
+                  No services
                 </Badge>
               )}
             </Button>
@@ -293,26 +300,58 @@ export const EnhancedServiceSelection = ({
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 pt-4 border-t border-border"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <Label className="text-sm font-medium">Choose Stylist:</Label>
+                    <div className="flex flex-col gap-3">
+                      <Label className="text-sm font-medium text-foreground">
+                        Choose Stylist: <span className="text-red-500">*</span>
+                      </Label>
+                      
+                     {isMobile ? (
+                       // Mobile-friendly button-based selection
+                       <div className="space-y-2">
+                         {availableStylists.map((stylist) => (
+                           <Button
+                             key={stylist.id}
+                             variant={selectedService?.stylist?.id === stylist.id ? 'default' : 'outline'}
+                             className="w-full justify-start h-12 text-left"
+                             onClick={() => {
+                               const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
+                               updateStylist(serviceIndex, activePersonIndex, stylist.id);
+                             }}
+                           >
+                             <div className="flex flex-col items-start">
+                               <span className="font-medium">{stylist.name}</span>
+                               <span className="text-xs text-muted-foreground">{stylist.title}</span>
+                             </div>
+                           </Button>
+                         ))}
+                       </div>
+                     ) : (
+                       // Desktop Select component
                       <Select
                         value={selectedService?.stylist?.id || ''}
                         onValueChange={(value) => {
                           const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
                           updateStylist(serviceIndex, activePersonIndex, value);
                         }}
+                        onOpenChange={(open) => {
+                        }}
                       >
-                        <SelectTrigger className="w-full sm:w-48 h-10 text-sm">
+                        <SelectTrigger className="w-full h-14 text-base border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
                           <SelectValue placeholder="Select stylist..." />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60">
+                        <SelectContent className="max-h-60 z-[9999]">
                           {availableStylists.map((stylist) => (
-                            <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3">
+                            <SelectItem key={stylist.id} value={stylist.id} className="text-base py-4 cursor-pointer">
                               {stylist.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                     )}
+                      
+                      <p className="text-xs text-muted-foreground">
+                        Select your preferred stylist or choose "Any Available Stylist" for the best match.
+                      </p>
                     </div>
                   </motion.div>
                 )}
@@ -364,6 +403,25 @@ export const EnhancedServiceSelection = ({
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* Validation Status */}
+      {bookingData.numberOfPeople > 1 && (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-foreground text-sm">Service Selection Status:</h4>
+          {peopleBookings.map((person, index) => (
+            <div key={index} className="flex items-center space-x-2 text-sm">
+              {person.services.length > 0 ? (
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              ) : (
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              )}
+              <span className={person.services.length > 0 ? 'text-green-600' : 'text-red-600'}>
+                {person.personName || `Person ${index + 1}`}: {person.services.length > 0 ? 'Services selected' : 'No services selected'}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

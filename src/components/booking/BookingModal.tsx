@@ -96,7 +96,7 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
              person.personName && person.personName.trim() !== ''
            ));
       case 2:
-        return bookingData.peopleBookings.some(person => person.services.length > 0);
+        return bookingData.peopleBookings.every(person => person.services.length > 0);
       case 3:
         return !!bookingData.date && !!bookingData.time;
       case 4:
