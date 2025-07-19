@@ -38,10 +38,10 @@ export const EnhancedBookingSummary = ({
   };
 
   const handleSubmit = async () => {
-    if (!contactInfo.name || !contactInfo.email || !contactInfo.phone) {
+    if (!contactInfo.name || !contactInfo.email || !contactInfo.phone || !bookingData.salon?.id) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required contact information.",
+        description: "Please fill in all required contact information and select a salon.",
         variant: "destructive",
       });
       return;
@@ -51,7 +51,7 @@ export const EnhancedBookingSummary = ({
     try {
       // Prepare booking data
       const bookingRequest = {
-        salon_id: bookingData.salon?.id || '',
+        salon_id: bookingData.salon.id, // require valid UUID
         customer_name: contactInfo.name,
         customer_email: contactInfo.email,
         customer_phone: contactInfo.phone,
@@ -67,7 +67,7 @@ export const EnhancedBookingSummary = ({
           duration: s.service.duration,
         }))),
         total_price: bookingData.totalPrice,
-        status: 'pending',
+        status: 'pending' as const,
         number_of_people: bookingData.numberOfPeople,
         // people_data removed
       };
