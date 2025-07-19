@@ -121,6 +121,9 @@ export const StylistSelection = ({ bookingData, selectedStylist, setSelectedStyl
             transition={{ duration: 0.2 }}
           >
             <Card
+              role="button"
+              tabIndex={0}
+              style={{ touchAction: 'manipulation' }}
               className={`p-4 cursor-pointer transition-all duration-300 ${
                 selectedStylist === stylist.id
                   ? 'ring-2 ring-primary shadow-luxury'
@@ -132,6 +135,11 @@ export const StylistSelection = ({ bookingData, selectedStylist, setSelectedStyl
               }`}
               onClick={() => {
                 if (stylist.availability !== 'unavailable') {
+                  handleStylistSelect(stylist.id);
+                }
+              }}
+              onKeyDown={e => {
+                if ((e.key === 'Enter' || e.key === ' ') && stylist.availability !== 'unavailable') {
                   handleStylistSelect(stylist.id);
                 }
               }}

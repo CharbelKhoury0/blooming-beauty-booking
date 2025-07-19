@@ -42,11 +42,22 @@ const SalonPage = () => {
         }
 
         // Fetch all related data
-        const [servicesResult, stylistsResult, testimonialsResult] = await Promise.all([
+        let [servicesResult, stylistsResult, testimonialsResult] = await Promise.all([
           supabase.from('services').select('*').eq('salon_id', salon.id),
           supabase.from('stylists').select('*').eq('salon_id', salon.id),
           supabase.from('testimonials').select('*').eq('salon_id', salon.id).order('created_at', { ascending: false })
         ]);
+
+        // Fallback to default salon if no data
+        if (!servicesResult.data || servicesResult.data.length === 0) {
+          servicesResult = await supabase.from('services').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
+        if (!stylistsResult.data || stylistsResult.data.length === 0) {
+          stylistsResult = await supabase.from('stylists').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
+        if (!testimonialsResult.data || testimonialsResult.data.length === 0) {
+          testimonialsResult = await supabase.from('testimonials').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328').order('created_at', { ascending: false });
+        }
 
         setSalonData({
           salon,
@@ -91,6 +102,16 @@ const SalonPage = () => {
 
   const { salon, services, stylists, testimonials } = salonData;
 
+  // Map testimonials to expected structure
+  const mappedTestimonials = (testimonials || []).map(t => ({
+    id: t.id,
+    name: t.author_name,
+    service: t.serviceName,
+    rating: t.rating,
+    text: t.text,
+    location: t.location || '',
+  }));
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar 
@@ -110,7 +131,7 @@ const SalonPage = () => {
           slug={salon.slug}
         />
         <AboutSection salon={salon} />
-        <TestimonialsSection testimonials={testimonials} salon={salon} />
+        <TestimonialsSection testimonials={mappedTestimonials} services={services} salon={salon} />
         <FAQSection />
       </main>
       

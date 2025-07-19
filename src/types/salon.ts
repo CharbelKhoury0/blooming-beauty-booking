@@ -49,7 +49,7 @@ export interface Testimonial {
   author_name: string;
   text: string;
   rating: number;
-  serviceName?: string; // Added serviceName property
+  serviceName?: string; // Reverted from service_name
   created_at: string;
   updated_at: string;
 }

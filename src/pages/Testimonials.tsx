@@ -58,7 +58,7 @@ const Testimonials = () => {
       {
         salon_id: salon.id,
         author_name: form.name,
-        serviceName: form.service,
+        service_name: form.service,
         rating: form.rating,
         text: form.text,
         created_at: new Date().toISOString(),
@@ -91,11 +91,22 @@ const Testimonials = () => {
         }
 
         // Fetch testimonials, services, and stylists
-        const [testimonialsResult, servicesResult, stylistsResult] = await Promise.all([
+        let [testimonialsResult, servicesResult, stylistsResult] = await Promise.all([
           supabase.from('testimonials').select('*').eq('salon_id', salonData.id).order('created_at', { ascending: false }),
           supabase.from('services').select('*').eq('salon_id', salonData.id),
           supabase.from('stylists').select('*').eq('salon_id', salonData.id)
         ]);
+
+        // Fallback to default salon if no data
+        if (!testimonialsResult.data || testimonialsResult.data.length === 0) {
+          testimonialsResult = await supabase.from('testimonials').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328').order('created_at', { ascending: false });
+        }
+        if (!servicesResult.data || servicesResult.data.length === 0) {
+          servicesResult = await supabase.from('services').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
+        if (!stylistsResult.data || stylistsResult.data.length === 0) {
+          stylistsResult = await supabase.from('stylists').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
 
         setSalon(salonData);
         setTestimonials(testimonialsResult.data || []);

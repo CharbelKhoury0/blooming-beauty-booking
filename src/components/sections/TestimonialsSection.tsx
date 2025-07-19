@@ -78,9 +78,10 @@ interface TestimonialsSectionProps {
   testimonials?: Testimonial[];
   onBookingClick?: (serviceId?: string) => void;
   slug?: string;
+  services?: { id: string; name: string }[];
 }
 
-export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSectionProps) => {
+export const TestimonialsSection = ({ testimonials = [], services = [], salon }: TestimonialsSectionProps) => {
   // Use provided testimonials or fallback to default
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -159,28 +160,70 @@ export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSe
     setCurrentIndex((prev) => (prev - 1 + displayTestimonials.length) % displayTestimonials.length);
   };
 
+  let serviceIndex = 0;
   const displayTestimonials = [
     ...localTestimonials,
     ...(testimonials.length > 0
-      ? testimonials.map(t => ({
-          id: t.id,
-          name: t.name,
-          text: t.text,
-          rating: t.rating,
-          service: 'Beauty Services',
-          location: 'Valued Client',
-        }))
+      ? testimonials.map((t, idx) => {
+          // Find a matching service in the DB
+          const matchedService = services.find(s => s.name === t.service);
+          let serviceName;
+          if (matchedService) {
+            serviceName = matchedService.name;
+          } else if (services.length > 0) {
+            serviceName = services[serviceIndex % services.length].name;
+            serviceIndex++;
+          } else {
+            serviceName = 'Our Service';
+          }
+          return {
+            ...t,
+            service: serviceName,
+            location: t.location || 'Valued Client',
+          };
+        })
       : [
-          {
-            id: '1',
-            name: 'Sarah Johnson',
-            service: 'Hair Styling & Color',
-            rating: 5,
-            text: 'Absolutely amazing experience! The stylists at Bloom Beauty truly understand their craft. My hair has never looked better, and the salon atmosphere is so relaxing.',
-            location: 'Downtown Client',
-          },
-          // ... other fallback testimonials
-        ]),
+        {
+          id: '1',
+          name: 'Maya Khoury',
+          service: 'Hair Styling & Color',
+          rating: 5,
+          text: 'Absolutely amazing experience! The stylists at Bloom Beauty truly understand their craft. My hair has never looked better, and the salon atmosphere is so relaxing.',
+          location: 'Beirut',
+        },
+        {
+          id: '2',
+          name: 'Rania Haddad',
+          service: 'Bridal Package',
+          rating: 5,
+          text: 'Perfect for my wedding day! The team made me feel like a princess. Every detail was flawless, and I received so many compliments. Highly recommend!',
+          location: 'Jounieh',
+        },
+        {
+          id: '3',
+          name: 'Nour Fares',
+          service: 'Facial Treatment',
+          rating: 5,
+          text: 'The facial treatments here are incredible. My skin feels rejuvenated and glowing. The staff is professional and the products they use are top quality.',
+          location: 'Byblos',
+        },
+        {
+          id: '4',
+          name: 'Layal Abou Jaoude',
+          service: 'Hair Color Correction',
+          rating: 5,
+          text: 'They fixed a color disaster from another salon perfectly! The colorist was so skilled and patient. I\'m now a client for life.',
+          location: 'Saida',
+        },
+        {
+          id: '5',
+          name: 'Rita Ghanem',
+          service: 'Full Service Package',
+          rating: 5,
+          text: 'Bloom Beauty is my go-to salon for everything. The quality is consistent, staff is friendly, and the results always exceed my expectations.',
+          location: 'Tripoli',
+        },
+      ]),
   ];
 
   return (

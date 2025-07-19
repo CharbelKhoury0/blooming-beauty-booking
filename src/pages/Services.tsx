@@ -25,11 +25,17 @@ const Services = () => {
       const { data: salonData } = await supabase.from('salons').select('*').eq('slug', slug).single();
       setSalon(salonData);
       if (salonData) {
-        const [servicesResult, stylistsResult] = await Promise.all([
+        let [servicesResult, stylistsResult] = await Promise.all([
           supabase.from('services').select('*').eq('salon_id', salonData.id),
           supabase.from('stylists').select('*').eq('salon_id', salonData.id)
         ]);
-        
+        // Fallback to default salon if no data
+        if (!servicesResult.data || servicesResult.data.length === 0) {
+          servicesResult = await supabase.from('services').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
+        if (!stylistsResult.data || stylistsResult.data.length === 0) {
+          stylistsResult = await supabase.from('stylists').select('*').eq('salon_id', '92fa42ea-d94b-4fe1-97b8-23b9afa71328');
+        }
         // Map icons based on service name
         const iconMap = [
           { keyword: 'hair', icon: Scissors },
