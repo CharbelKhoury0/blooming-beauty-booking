@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Clock, Plus, Minus, User, Users } from 'lucide-react';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 import type { BookingData, PersonBookingData, Service, Stylist } from '@/types/booking';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 // Mock services data
 const availableServices: Service[] = [
@@ -136,7 +135,6 @@ export const EnhancedServiceSelection = ({
 }: EnhancedServiceSelectionProps) => {
   const [activePersonIndex, setActivePersonIndex] = useState(0);
   const peopleBookings = bookingData.peopleBookings || [];
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (preselectedServiceId && peopleBookings.length > 0) {
@@ -305,49 +303,28 @@ export const EnhancedServiceSelection = ({
                         Choose Stylist: <span className="text-red-500">*</span>
                       </Label>
                       
-                     {isMobile ? (
-                       // Mobile-friendly button-based selection
-                       <div className="space-y-2">
-                         {availableStylists.map((stylist) => (
-                           <Button
-                             key={stylist.id}
-                             variant={selectedService?.stylist?.id === stylist.id ? 'default' : 'outline'}
-                             className="w-full justify-start h-12 text-left"
-                             onClick={() => {
-                               const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
-                               updateStylist(serviceIndex, activePersonIndex, stylist.id);
-                             }}
-                           >
-                             <div className="flex flex-col items-start">
-                               <span className="font-medium">{stylist.name}</span>
-                               <span className="text-xs text-muted-foreground">{stylist.title}</span>
-                             </div>
-                           </Button>
-                         ))}
-                       </div>
-                     ) : (
-                       // Desktop Select component
+                     <div className="relative">
                       <Select
                         value={selectedService?.stylist?.id || ''}
                         onValueChange={(value) => {
                           const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
                           updateStylist(serviceIndex, activePersonIndex, value);
                         }}
-                        onOpenChange={(open) => {
-                        }}
                       >
-                        <SelectTrigger className="w-full h-14 text-base border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
+                        <SelectTrigger className="w-full h-12 text-sm border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
                           <SelectValue placeholder="Select stylist..." />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60 z-[9999]">
+                        <SelectContent 
+                          className="max-h-60"
+                        >
                           {availableStylists.map((stylist) => (
-                            <SelectItem key={stylist.id} value={stylist.id} className="text-base py-4 cursor-pointer">
+                            <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3 cursor-pointer">
                               {stylist.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                     )}
+                     </div>
                       
                       <p className="text-xs text-muted-foreground">
                         Select your preferred stylist or choose "Any Available Stylist" for the best match.

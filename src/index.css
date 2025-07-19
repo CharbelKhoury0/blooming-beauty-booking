@@ -226,6 +226,16 @@ html, body {
   .backdrop-blur-md {
     backdrop-filter: none !important;
   }
+  
+  /* Ensure Select components work properly in modals on mobile */
+  [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+  
+  /* Fix Select positioning in scrollable containers */
+  [role="listbox"] {
+    position: fixed !important;
+  }
 }
 
 /* Hide scrollbar but allow scrolling */

@@ -9,14 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // CMS-ready testimonial data structure
-export interface Testimonial {
+interface Testimonial {
   id: string;
   name: string;
   service: string;
   rating: number;
   text: string;
-  image?: string;
-  location?: string;
+  location: string;
 }
 
 const testimonials: Testimonial[] = [
@@ -72,8 +71,13 @@ const serviceOptions = [
 ];
 
 interface TestimonialsSectionProps {
-  testimonials?: any[];
-  salon?: any;
+  salon?: {
+    id: string;
+    name: string;
+  };
+  testimonials?: Testimonial[];
+  onBookingClick?: (serviceId?: string) => void;
+  slug?: string;
 }
 
 export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSectionProps) => {
@@ -140,11 +144,9 @@ export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSe
         setCurrentIndex(0);
         toast.success('Thank you for your testimonial!');
       } else {
-        console.error('Supabase insert error:', error);
         toast.error('Failed to submit testimonial. Please try again.');
       }
     } catch (error) {
-      console.error('Error submitting testimonial:', error);
       toast.error('Failed to submit testimonial. Please try again.');
     }
   };
@@ -162,7 +164,7 @@ export const TestimonialsSection = ({ testimonials = [], salon }: TestimonialsSe
     ...(testimonials.length > 0
       ? testimonials.map(t => ({
           id: t.id,
-          name: t.author_name,
+          name: t.name,
           text: t.text,
           rating: t.rating,
           service: 'Beauty Services',

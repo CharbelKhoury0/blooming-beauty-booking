@@ -11,7 +11,7 @@ export interface Service {
   description: string;
   price: string;
   duration: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   popular?: boolean;
   image?: string;
 }
@@ -70,7 +70,11 @@ const services: Service[] = [
 ];
 
 interface ServicesSectionProps {
-  services?: any[];
+  salon?: {
+    id: string;
+    name: string;
+  };
+  services?: Service[];
   onBookingClick?: (serviceId?: string) => void;
   slug?: string;
 }

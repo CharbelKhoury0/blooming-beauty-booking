@@ -58,7 +58,8 @@ const TermsOfService = () => {
         setServices(servicesResult.data || []);
         setStylists(stylistsResult.data || []);
       } catch (error) {
-        console.error('Error fetching salon data:', error);
+        // Handle error silently for now
+        // In production, you might want to log this to an error tracking service
       } finally {
         setLoading(false);
       }

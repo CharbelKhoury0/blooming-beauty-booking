@@ -55,7 +55,6 @@ const SalonPage = () => {
           testimonials: testimonialsResult.data || []
         });
       } catch (error) {
-        console.error('Error fetching salon data:', error);
         setNotFound(true);
       } finally {
         setLoading(false);

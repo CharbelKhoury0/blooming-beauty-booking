@@ -5,7 +5,7 @@ export interface Service {
   duration: string;
   description?: string;
   popular?: boolean;
-  icon?: any;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
 export interface Stylist {

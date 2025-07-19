@@ -7,15 +7,18 @@ import { PeopleSelection } from './steps/PeopleSelection';
 import { EnhancedServiceSelection } from './steps/EnhancedServiceSelection';
 import { DateTimeSelection } from './steps/DateTimeSelection';
 import { EnhancedBookingSummary } from './steps/EnhancedBookingSummary';
-import type { BookingData } from '@/types/booking';
+import type { BookingData, Service, Stylist } from '@/types/booking';
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  salon?: {
+    id: string;
+    name: string;
+  };
+  services?: Service[];
+  stylists?: Stylist[];
   preselectedServiceId?: string;
-  services?: any[];
-  stylists?: any[];
-  salon?: any;
 }
 
 const steps = [

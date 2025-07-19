@@ -70,7 +70,6 @@ const Testimonials = () => {
       setForm({ name: '', service: serviceOptions[0], rating: 5, text: '', location: '' });
       toast.success('Thank you for your testimonial!');
     } else {
-      console.error('Supabase insert error:', error);
       toast.error('Failed to submit testimonial. Please try again.');
     }
   };
@@ -103,7 +102,8 @@ const Testimonials = () => {
         setServices(servicesResult.data || []);
         setStylists(stylistsResult.data || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        // Handle error silently for now
+        // In production, you might want to log this to an error tracking service
       } finally {
         setLoading(false);
       }

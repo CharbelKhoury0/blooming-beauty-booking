@@ -59,7 +59,6 @@ export const EnhancedBookingSummary = ({
       
       onBookingComplete();
     } catch (error) {
-      console.error('Booking error:', error);
       toast({
         title: "Booking Failed",
         description: "There was an error processing your booking. Please try again.",

@@ -67,7 +67,8 @@ export default function Contact() {
         setServices(servicesResult.data || []);
         setStylists(stylistsResult.data || []);
       } catch (error) {
-        console.error('Error fetching salon data:', error);
+        // Handle error silently for now
+        // In production, you might want to log this to an error tracking service
       } finally {
         setLoading(false);
       }
@@ -82,13 +83,6 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!salon) return;
-    
-    // Log the form data to console for now
-    console.log('Contact form submitted:', {
-      salon_id: salon.id,
-      ...form,
-      created_at: new Date().toISOString(),
-    });
     
     // Show success message
     setSubmitted(true);
