@@ -321,7 +321,6 @@ export default function Contact() {
                         alt="Salon Location Map"
                         className="w-full h-full object-cover rounded-md"
                         style={{ minHeight: 200 }}
-                        onError={e => { e.currentTarget.src = '/placeholder-map.png'; }}
                       />
                     </a>
                   );
