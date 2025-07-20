@@ -306,7 +306,7 @@ export default function Contact() {
                     marker = `color:pink|${encodeURIComponent(salon.address)}`;
                     mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address)}`;
                   }
-                  if (!mapCenter) return null; // No valid location
+                  if (!mapCenter || !GOOGLE_MAPS_API_KEY) return null; // No valid location or API key
                   const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=15&size=600x200&markers=${marker}&key=${GOOGLE_MAPS_API_KEY}`;
                   return (
                     <a
