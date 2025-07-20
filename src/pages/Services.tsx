@@ -132,8 +132,8 @@ const Services = () => {
         isOpen={isBookingModalOpen}
         onClose={handleCloseBooking}
         preselectedServiceId={preselectedServiceId}
-        services={services}
-        stylists={stylists}
+        services={services.map(s => ({ ...s, icon: (s as any).icon }))}
+        stylists={stylists.map(s => ({ ...s, availability: 'available' as const }))}
         salon={salon}
       />
     </div>

@@ -267,8 +267,8 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                     <CurrentStepComponent
                       bookingData={bookingData}
                       onUpdate={handleStepComplete}
-                      services={services}
-                      stylists={stylists}
+                      {...(services && { services })}
+                      {...(stylists && { stylists })}
                       {...(currentStep === 2 && { preselectedServiceId })}
                       {...(currentStep === 4 && { 
                         onComplete: handleStepComplete,

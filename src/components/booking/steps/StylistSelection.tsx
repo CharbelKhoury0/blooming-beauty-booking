@@ -221,7 +221,7 @@ export const StylistSelection = ({ bookingData, selectedStylist, setSelectedStyl
           <div className="text-sm text-muted-foreground">
             {selectedStylist === 'any' 
               ? 'We\'ll match you with the best available stylist for your selected services.'
-              : `You've selected ${stylists.find(s => s.id === selectedStylist)?.name}. They will provide your ${bookingData.services.map(s => s.name).join(', ')} service${bookingData.services.length > 1 ? 's' : ''}.`
+              : `You've selected ${stylists.find(s => s.id === selectedStylist)?.name}. They will provide your selected services.`
             }
           </div>
         </motion.div>

@@ -11,6 +11,7 @@ import { BookingModal } from '@/components/booking/BookingModal';
 import { SalonData } from '@/types/salon';
 import { FAQSection } from '@/components/sections/FAQSection';
 import { BookingErrorBoundary } from '@/components/booking/BookingErrorBoundary';
+import { Sparkles } from 'lucide-react';
 
 const SalonPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -119,7 +120,7 @@ const SalonPage = () => {
     service: t.serviceName,
     rating: t.rating,
     text: t.text,
-    location: t.location || '',
+    location: ''
   }));
 
   return (
@@ -136,7 +137,11 @@ const SalonPage = () => {
           onBookingClick={() => handleBookingClick()} 
         />
         <ServicesSection 
-          services={services}
+          services={services.map(s => ({ 
+            ...s, 
+            icon: Sparkles,
+            description: s.description || 'Professional service'
+          }))}
           onBookingClick={handleBookingClick}
           slug={salon.slug}
         />
@@ -155,8 +160,12 @@ const SalonPage = () => {
           isOpen={isBookingModalOpen}
           onClose={handleCloseBooking}
           preselectedServiceId={preselectedServiceId}
-          services={services}
-          stylists={stylists}
+          services={services.map(s => ({ 
+            ...s, 
+            icon: Sparkles,
+            description: s.description || 'Professional service'
+          }))}
+          stylists={stylists.map(s => ({ ...s, availability: 'available' as const }))}
           salon={salon}
         />
       </BookingErrorBoundary>

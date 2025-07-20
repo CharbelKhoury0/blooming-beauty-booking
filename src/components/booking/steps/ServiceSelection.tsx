@@ -73,7 +73,7 @@ export const ServiceSelection = ({
   setSelectedServices, 
   preselectedServiceId 
 }: ServiceSelectionProps) => {
-  const selectedServices = bookingData.services;
+  const selectedServices = bookingData.peopleBookings.flatMap(p => p.services.map(s => s.service));
 
   useEffect(() => {
     if (preselectedServiceId && selectedServices.length === 0) {
