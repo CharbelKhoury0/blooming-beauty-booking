@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_people: {
+        Row: {
+          booking_id: string
+          created_at: string
+          id: string
+          person_name: string
+          person_order: number
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          id?: string
+          person_name: string
+          person_order?: number
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          id?: string
+          person_name?: string
+          person_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_people_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_services: {
+        Row: {
+          booking_people_id: string
+          created_at: string
+          id: string
+          service_duration: string
+          service_id: string
+          service_name: string
+          service_price: string
+          stylist_id: string | null
+          stylist_name: string
+          updated_at: string
+        }
+        Insert: {
+          booking_people_id: string
+          created_at?: string
+          id?: string
+          service_duration: string
+          service_id: string
+          service_name: string
+          service_price: string
+          stylist_id?: string | null
+          stylist_name: string
+          updated_at?: string
+        }
+        Update: {
+          booking_people_id?: string
+          created_at?: string
+          id?: string
+          service_duration?: string
+          service_id?: string
+          service_name?: string
+          service_price?: string
+          stylist_id?: string | null
+          stylist_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_services_booking_people_id_fkey"
+            columns: ["booking_people_id"]
+            isOneToOne: false
+            referencedRelation: "booking_people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_services_stylist_id_fkey"
+            columns: ["stylist_id"]
+            isOneToOne: false
+            referencedRelation: "stylists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_date: string
@@ -25,6 +121,7 @@ export type Database = {
           customer_notes: string | null
           customer_phone: string
           id: string
+          number_of_people: number | null
           salon_id: string
           services: Json
           status: string
@@ -43,6 +140,7 @@ export type Database = {
           customer_notes?: string | null
           customer_phone: string
           id?: string
+          number_of_people?: number | null
           salon_id: string
           services: Json
           status?: string
@@ -61,6 +159,7 @@ export type Database = {
           customer_notes?: string | null
           customer_phone?: string
           id?: string
+          number_of_people?: number | null
           salon_id?: string
           services?: Json
           status?: string
@@ -86,11 +185,51 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          salon_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          salon_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          salon_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_messages_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salons: {
         Row: {
           about: string | null
           address: string | null
-          booking_email: string | null
           created_at: string
           hero_image_url: string | null
           id: string
@@ -102,11 +241,11 @@ export type Database = {
           socials: Json | null
           tagline: string | null
           updated_at: string
+          working_hours: string | null
         }
         Insert: {
           about?: string | null
           address?: string | null
-          booking_email?: string | null
           created_at?: string
           hero_image_url?: string | null
           id?: string
@@ -118,11 +257,11 @@ export type Database = {
           socials?: Json | null
           tagline?: string | null
           updated_at?: string
+          working_hours?: string | null
         }
         Update: {
           about?: string | null
           address?: string | null
-          booking_email?: string | null
           created_at?: string
           hero_image_url?: string | null
           id?: string
@@ -134,6 +273,7 @@ export type Database = {
           socials?: Json | null
           tagline?: string | null
           updated_at?: string
+          working_hours?: string | null
         }
         Relationships: []
       }
@@ -232,6 +372,7 @@ export type Database = {
           id: string
           rating: number | null
           salon_id: string
+          serviceName: string
           text: string
           updated_at: string
         }
@@ -241,6 +382,7 @@ export type Database = {
           id?: string
           rating?: number | null
           salon_id: string
+          serviceName?: string
           text: string
           updated_at?: string
         }
@@ -250,6 +392,7 @@ export type Database = {
           id?: string
           rating?: number | null
           salon_id?: string
+          serviceName?: string
           text?: string
           updated_at?: string
         }

@@ -24,10 +24,10 @@ interface BookingModalProps {
 }
 
 const steps = [
-  { id: 1, title: 'People', component: PeopleSelection },
-  { id: 2, title: 'Services', component: EnhancedServiceSelection },
-  { id: 3, title: 'Date & Time', component: DateTimeSelection },
-  { id: 4, title: 'Confirm', component: EnhancedBookingSummary },
+  { id: 1, title: 'People', description: 'Select number of people' },
+  { id: 2, title: 'Services', description: 'Choose services and stylists' },
+  { id: 3, title: 'Date & Time', description: 'Pick your appointment time' },
+  { id: 4, title: 'Confirm', description: 'Review and confirm booking' },
 ];
 
 export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, stylists, salon }: BookingModalProps) => {
@@ -134,7 +134,8 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
     }
   };
 
-  const CurrentStepComponent = steps[currentStep - 1].component;
+  const stepComponents = [PeopleSelection, EnhancedServiceSelection, DateTimeSelection, EnhancedBookingSummary];
+  const CurrentStepComponent = stepComponents[currentStep - 1];
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
