@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,19 +23,53 @@ export const EnhancedBookingSummary = ({
   onComplete, 
   onBookingComplete 
 }: EnhancedBookingSummaryProps) => {
-  const [contactInfo, setContactInfo] = useState(bookingData.primaryContact || {
-    name: '',
-    email: '',
-    phone: '',
-    notes: ''
+  const [contactInfo, setContactInfo] = useState(() => {
+    // Pre-fill contact name with Person 1's name if contact name is blank
+    return bookingData.primaryContact && bookingData.primaryContact.name
+      ? bookingData.primaryContact
+      : {
+          name: bookingData.peopleBookings[0]?.personName || '',
+          email: '',
+          phone: '',
+          notes: ''
+        };
   });
   const { submitBooking, isSubmitting } = useBookingSubmission();
   const { toast } = useToast();
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  // Keep contact name in sync with Person 1's name only if contact name is still blank
+  useEffect(() => {
+    if (!contactInfo.name && bookingData.peopleBookings[0]?.personName) {
+      setContactInfo((prev) => ({ ...prev, name: bookingData.peopleBookings[0].personName }));
+    }
+    // Only run when peopleBookings[0].personName changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingData.peopleBookings[0]?.personName]);
+
+  const validateEmail = (email: string) => {
+    // Simple email regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    // Simple phone regex (US/international, allows spaces, dashes, parentheses)
+    return /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(phone);
+  };
 
   const updateContactInfo = (field: string, value: string) => {
     const updated = { ...contactInfo, [field]: value };
     setContactInfo(updated);
     onComplete({ primaryContact: updated });
+
+    // Validate on change
+    if (field === 'email') {
+      setEmailError(validateEmail(value) ? '' : 'Please enter a valid email address.');
+    }
+    if (field === 'phone') {
+      setPhoneError(validatePhone(value) ? '' : 'Please enter a valid phone number.');
+    }
   };
 
   const handleSubmit = async () => {
@@ -45,6 +79,14 @@ export const EnhancedBookingSummary = ({
         description: "Please fill in all required contact information and select a salon.",
         variant: "destructive",
       });
+      return;
+    }
+    if (!validateEmail(contactInfo.email)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+    if (!validatePhone(contactInfo.phone)) {
+      setPhoneError('Please enter a valid phone number.');
       return;
     }
 
@@ -150,7 +192,7 @@ export const EnhancedBookingSummary = ({
                 <div className="flex items-center space-x-2">
                   <User className="w-4 h-4 text-primary" />
                   <span className="font-medium text-foreground">
-                    {person.personName || `Person ${personIndex + 1}`}
+                    {person.personName || (personIndex === 0 ? 'Primary Guest' : `Guest ${personIndex + 1}`)}
                   </span>
                 </div>
                 <div className="ml-6 space-y-2">
@@ -221,7 +263,9 @@ export const EnhancedBookingSummary = ({
                 value={contactInfo.email}
                 onChange={(e) => updateContactInfo('email', e.target.value)}
                 required
+                className={emailError ? 'border-red-500' : ''}
               />
+              {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
             </div>
 
             <div className="space-y-2">
@@ -236,7 +280,9 @@ export const EnhancedBookingSummary = ({
                 value={contactInfo.phone}
                 onChange={(e) => updateContactInfo('phone', e.target.value)}
                 required
+                className={phoneError ? 'border-red-500' : ''}
               />
+              {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
             </div>
           </div>
 

@@ -37,7 +37,7 @@ export const useBookingSubmission = () => {
         customer_notes: bookingData.primaryContact.notes || null,
         booking_date: bookingData.date.split('T')[0],
         booking_time: bookingData.time,
-        stylist_id: bookingData.peopleBookings[0]?.services[0]?.stylist?.id || null,
+        stylist_id: bookingData.peopleBookings[0]?.services[0]?.stylist?.id && bookingData.peopleBookings[0]?.services[0]?.stylist?.id !== 'any' ? bookingData.peopleBookings[0].services[0].stylist.id : null,
         stylist_name: bookingData.peopleBookings[0]?.services[0]?.stylist?.name || 'Any Available',
         services: bookingData.peopleBookings.flatMap(p => 
           p.services.map(s => ({
@@ -92,7 +92,7 @@ export const useBookingSubmission = () => {
               service_name: serviceData.service.name,
               service_price: serviceData.service.price,
               service_duration: serviceData.service.duration,
-              stylist_id: serviceData.stylist?.id || null,
+              stylist_id: serviceData.stylist?.id && serviceData.stylist.id !== 'any' ? serviceData.stylist.id : null,
               stylist_name: serviceData.stylist?.name || 'Any Available'
             });
 
