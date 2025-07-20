@@ -10,6 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 import { BookingModal } from '@/components/booking/BookingModal';
 import { SalonData } from '@/types/salon';
 import { FAQSection } from '@/components/sections/FAQSection';
+import { BookingErrorBoundary } from '@/components/booking/BookingErrorBoundary';
 
 const SalonPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -85,6 +86,15 @@ const SalonPage = () => {
     setPreselectedServiceId(undefined);
   };
 
+  const handleBookingReset = () => {
+    setIsBookingModalOpen(false);
+    setPreselectedServiceId(undefined);
+    // Small delay before reopening to ensure clean state
+    setTimeout(() => {
+      setIsBookingModalOpen(true);
+    }, 100);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -140,14 +150,16 @@ const SalonPage = () => {
         onBookingClick={() => handleBookingClick()} 
       />
       
-      <BookingModal 
-        isOpen={isBookingModalOpen}
-        onClose={handleCloseBooking}
-        preselectedServiceId={preselectedServiceId}
-        services={services}
-        stylists={stylists}
-        salon={salon}
-      />
+      <BookingErrorBoundary onReset={handleBookingReset}>
+        <BookingModal 
+          isOpen={isBookingModalOpen}
+          onClose={handleCloseBooking}
+          preselectedServiceId={preselectedServiceId}
+          services={services}
+          stylists={stylists}
+          salon={salon}
+        />
+      </BookingErrorBoundary>
     </div>
   );
 };

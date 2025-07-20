@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -8,6 +9,7 @@ import { EnhancedServiceSelection } from './steps/EnhancedServiceSelection';
 import { DateTimeSelection } from './steps/DateTimeSelection';
 import { EnhancedBookingSummary } from './steps/EnhancedBookingSummary';
 import type { BookingData, Service, Stylist } from '@/types/booking';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ const steps = [
 export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, stylists, salon }: BookingModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<BookingData>({
+    salon: salon || { id: '92fa42ea-d94b-4fe1-97b8-23b9afa71328', name: 'Default Salon' },
     numberOfPeople: 1,
     peopleBookings: [{ personName: '', services: [] }],
     totalPrice: 0,
@@ -44,6 +47,17 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
   const [isComplete, setIsComplete] = useState(false);
+  const { toast } = useToast();
+
+  // Ensure salon data is always available
+  useEffect(() => {
+    if (salon && salon.id !== bookingData.salon?.id) {
+      setBookingData(prev => ({ 
+        ...prev, 
+        salon: salon 
+      }));
+    }
+  }, [salon, bookingData.salon?.id]);
 
   const handleStepComplete = (data: Partial<BookingData>) => {
     setBookingData(prev => ({ ...prev, ...data }));
@@ -71,11 +85,11 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
 
   const handleBookingComplete = () => {
     setIsComplete(true);
-    // Reset after 3 seconds
     setTimeout(() => {
       setIsComplete(false);
       setCurrentStep(1);
       setBookingData({
+        salon: salon || { id: '92fa42ea-d94b-4fe1-97b8-23b9afa71328', name: 'Default Salon' },
         numberOfPeople: 1,
         peopleBookings: [{ personName: '', services: [] }],
         totalPrice: 0,
@@ -99,11 +113,16 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
              person.personName && person.personName.trim() !== ''
            ));
       case 2:
-        return bookingData.peopleBookings.every(person => person.services.length > 0);
+        return bookingData.peopleBookings.every(person => person.services.length > 0) &&
+          bookingData.peopleBookings.every(person => 
+            person.services.every(serviceData => serviceData.stylist)
+          );
       case 3:
         return !!bookingData.date && !!bookingData.time;
       case 4:
-        return !!bookingData.primaryContact?.name && !!bookingData.primaryContact?.email;
+        return !!bookingData.primaryContact?.name && 
+               !!bookingData.primaryContact?.email && 
+               !!bookingData.primaryContact?.phone;
       default:
         return false;
     }
@@ -118,12 +137,30 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
   const CurrentStepComponent = steps[currentStep - 1].component;
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to top when currentStep changes
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentStep]);
+
+  // Error boundary for booking issues
+  if (!bookingData.salon?.id) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Booking Error</DialogTitle>
+          </DialogHeader>
+          <div className="text-center p-4">
+            <p className="text-muted-foreground mb-4">
+              Unable to load salon information. Please try again later.
+            </p>
+            <Button onClick={onClose}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -148,17 +185,17 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                 Booking Confirmed!
               </h2>
               <p className="text-muted-foreground mb-6">
-                Thank you for choosing Bloom Beauty. We've sent a confirmation email 
+                Thank you for choosing {bookingData.salon.name}. We've sent a confirmation email 
                 with all the details. We can't wait to see you!
               </p>
               <div className="card-luxury p-4 text-left max-w-md mx-auto sm:p-2 sm:max-w-full">
-              <div className="space-y-3">
-                <div><strong>People:</strong> {bookingData.numberOfPeople}</div>
-                <div><strong>Services:</strong> {bookingData.peopleBookings.flatMap(p => p.services.map(s => s.service.name)).join(', ')}</div>
-                <div><strong>Date:</strong> {bookingData.date ? new Date(bookingData.date).toLocaleDateString() : 'Not set'}</div>
-                <div><strong>Time:</strong> {bookingData.time || 'Not set'}</div>
-                <div><strong>Total:</strong> ${bookingData.totalPrice.toFixed(2)}</div>
-              </div>
+                <div className="space-y-3">
+                  <div><strong>People:</strong> {bookingData.numberOfPeople}</div>
+                  <div><strong>Services:</strong> {bookingData.peopleBookings.flatMap(p => p.services.map(s => s.service.name)).join(', ')}</div>
+                  <div><strong>Date:</strong> {bookingData.date ? new Date(bookingData.date).toLocaleDateString() : 'Not set'}</div>
+                  <div><strong>Time:</strong> {bookingData.time || 'Not set'}</div>
+                  <div><strong>Total:</strong> ${bookingData.totalPrice.toFixed(2)}</div>
+                </div>
               </div>
             </motion.div>
           ) : (
@@ -169,18 +206,16 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
               exit={{ opacity: 0 }}
               className="flex flex-col flex-1 min-h-0"
             >
-              {/* Header with better mobile spacing */}
               <DialogHeader className="px-4 py-3 border-b border-border shrink-0 sm:px-3 sm:py-2 md:px-10 md:py-6">
                 <div className="flex items-center justify-between">
                   <DialogTitle className="text-lg font-heading font-semibold sm:text-base md:text-2xl">
-                    Book Your Appointment
+                    Book Your Appointment - {bookingData.salon.name}
                   </DialogTitle>
                   <Button variant="ghost" size="icon" onClick={onClose} className="sm:w-8 sm:h-8">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
                 <div className="h-4 sm:h-2 md:h-6"></div>
-                {/* Fixed Progress Bar with proper scrolling */}
                 <div className="overflow-x-auto scrollbar-hide">
                   <div className="flex items-center justify-between min-w-max sm:min-w-[400px] px-2 md:px-4">
                     {steps.map((step, index) => (
@@ -217,7 +252,6 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                 </div>
               </DialogHeader>
 
-              {/* Improved Scrollable Content */}
               <div
                 ref={contentRef}
                 className="flex-1 overflow-y-auto px-4 py-3 sm:px-3 sm:py-2 md:px-10 md:py-8"
@@ -233,6 +267,8 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                     <CurrentStepComponent
                       bookingData={bookingData}
                       onUpdate={handleStepComplete}
+                      services={services}
+                      stylists={stylists}
                       {...(currentStep === 2 && { preselectedServiceId })}
                       {...(currentStep === 4 && { 
                         onComplete: handleStepComplete,
@@ -249,7 +285,6 @@ export const BookingModal = ({ isOpen, onClose, preselectedServiceId, services, 
                 </AnimatePresence>
               </div>
               
-              {/* Improved Sticky Footer */}
               <div className="flex items-center justify-between px-4 py-3 bg-background border-t border-border shrink-0 sm:px-3 sm:py-2 sm:flex-col sm:gap-2 md:px-10 md:py-6">
                 {currentStep > 1 ? (
                   <Button

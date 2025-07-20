@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -5,151 +6,70 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Clock, Plus, Minus, User, Users } from 'lucide-react';
+import { Clock, User, AlertCircle } from 'lucide-react';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 import type { BookingData, PersonBookingData, Service, Stylist } from '@/types/booking';
 
-// Mock services data
-const availableServices: Service[] = [
-  {
-    id: '1',
-    name: 'Hair Styling & Cut',
-    description: 'Professional cuts, styling, and blow-dry services tailored to your face shape.',
-    price: 'From $85',
-    duration: '60-90 min',
-    icon: Scissors,
-    popular: true,
-  },
-  {
-    id: '2',
-    name: 'Hair Coloring',
-    description: 'Full color, highlights, balayage, and color correction.',
-    price: 'From $120',
-    duration: '2-4 hours',
-    icon: Palette,
-    popular: true,
-  },
-  {
-    id: '3',
-    name: 'Facial Treatments',
-    description: 'Rejuvenating facials using premium skincare products.',
-    price: 'From $95',
-    duration: '60-75 min',
-    icon: Sparkles,
-  },
-  {
-    id: '4',
-    name: 'Bridal Package',
-    description: 'Complete bridal beauty package including hair and makeup.',
-    price: 'From $350',
-    duration: '4-6 hours',
-    icon: Crown,
-  },
-  {
-    id: '5',
-    name: 'Spa Treatments',
-    description: 'Relaxing massage, body treatments, and wellness services.',
-    price: 'From $110',
-    duration: '60-90 min',
-    icon: Heart,
-  },
-  {
-    id: '6',
-    name: 'Express Services',
-    description: 'Quick touch-ups, eyebrow shaping, and express treatments.',
-    price: 'From $35',
-    duration: '15-30 min',
-    icon: Zap,
-  },
-];
-
-// Mock stylists data
-const availableStylists: Stylist[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    title: 'Senior Hair Stylist',
-    experience: '8 years',
-    specialties: ['Color Correction', 'Balayage', 'Precision Cuts'],
-    rating: 4.9,
-    reviewCount: 127,
-    availability: 'available',
-    bio: 'Specializes in modern color techniques and precision cuts.',
-  },
-  {
-    id: '2',
-    name: 'Emily Rodriguez',
-    title: 'Master Colorist',
-    experience: '12 years',
-    specialties: ['Hair Color', 'Highlights', 'Bridal Hair'],
-    rating: 5.0,
-    reviewCount: 203,
-    availability: 'available',
-    bio: 'Award-winning colorist with expertise in all color services.',
-  },
-  {
-    id: '3',
-    name: 'Jessica Chen',
-    title: 'Beauty Specialist',
-    experience: '6 years',
-    specialties: ['Facials', 'Skincare', 'Spa Treatments'],
-    rating: 4.8,
-    reviewCount: 89,
-    availability: 'available',
-    bio: 'Licensed esthetician specializing in anti-aging treatments.',
-  },
-  {
-    id: '4',
-    name: 'Maria Santos',
-    title: 'Hair & Makeup Artist',
-    experience: '10 years',
-    specialties: ['Bridal Makeup', 'Special Events', 'Hair Styling'],
-    rating: 4.9,
-    reviewCount: 156,
-    availability: 'available',
-    bio: 'Professional makeup artist and hair stylist for all occasions.',
-  },
-  {
-    id: 'any',
-    name: 'Any Available Stylist',
-    title: 'Best Match',
-    experience: 'Varies',
-    specialties: ['All Services'],
-    rating: 4.9,
-    reviewCount: 500,
-    availability: 'available',
-    bio: 'We\'ll match you with the best available stylist for your services.',
-  },
-];
+const serviceIcons: { [key: string]: any } = {
+  'hair': Scissors,
+  'color': Palette,
+  'facial': Sparkles,
+  'bridal': Crown,
+  'spa': Heart,
+  'express': Zap,
+};
 
 interface EnhancedServiceSelectionProps {
   bookingData: BookingData;
   onUpdate: (data: Partial<BookingData>) => void;
   preselectedServiceId?: string;
+  services?: Service[];
+  stylists?: Stylist[];
 }
 
 export const EnhancedServiceSelection = ({ 
   bookingData, 
   onUpdate, 
-  preselectedServiceId 
+  preselectedServiceId,
+  services = [],
+  stylists = []
 }: EnhancedServiceSelectionProps) => {
   const [activePersonIndex, setActivePersonIndex] = useState(0);
   const peopleBookings = bookingData.peopleBookings || [];
 
+  // Add "Any Available Stylist" option to stylists
+  const availableStylists = [
+    {
+      id: 'any',
+      name: 'Any Available Stylist',
+      title: 'Best Match',
+      experience: 'Varies',
+      specialties: ['All Services'],
+      rating: 4.9,
+      reviewCount: 500,
+      availability: 'available' as const,
+      bio: 'We\'ll match you with the best available stylist for your services.',
+    },
+    ...stylists
+  ];
+
   useEffect(() => {
     if (preselectedServiceId && peopleBookings.length > 0) {
-      const preselectedService = availableServices.find(s => s.id === preselectedServiceId);
+      const preselectedService = services.find(s => s.id === preselectedServiceId);
       if (preselectedService) {
         const updated = [...peopleBookings];
         const existingService = updated[0]?.services.find(s => s.service.id === preselectedServiceId);
         if (!existingService) {
           if (!updated[0]) updated[0] = { personName: '', services: [] };
-          updated[0].services.push({ service: preselectedService });
+          updated[0].services.push({ 
+            service: preselectedService,
+            stylist: availableStylists[0] // Default to "Any Available"
+          });
           updateTotalPrice(updated);
         }
       }
     }
-  }, [preselectedServiceId, peopleBookings.length]);
+  }, [preselectedServiceId, peopleBookings.length, services.length]);
 
   const toggleService = (service: Service, personIndex: number) => {
     const updated = [...peopleBookings];
@@ -159,7 +79,10 @@ export const EnhancedServiceSelection = ({
     if (existingIndex >= 0) {
       person.services.splice(existingIndex, 1);
     } else {
-      person.services.push({ service });
+      person.services.push({ 
+        service,
+        stylist: availableStylists[0] // Default to "Any Available"
+      });
     }
     
     updateTotalPrice(updated);
@@ -177,7 +100,7 @@ export const EnhancedServiceSelection = ({
   const updateTotalPrice = (updatedPeopleBookings: PersonBookingData[]) => {
     const total = updatedPeopleBookings.reduce((sum, person) => {
       return sum + person.services.reduce((personSum, { service }) => {
-        const price = parseFloat(service.price.replace(/[^0-9.]/g, ''));
+        const price = parseFloat(service.price.replace(/[^0-9.]/g, '')) || 0;
         return personSum + price;
       }, 0);
     }, 0);
@@ -190,10 +113,38 @@ export const EnhancedServiceSelection = ({
 
   const getCurrentPerson = () => peopleBookings[activePersonIndex] || { personName: '', services: [] };
   const getTotalServices = () => peopleBookings.reduce((sum, person) => sum + person.services.length, 0);
+  
+  const getServiceIcon = (service: Service) => {
+    const serviceName = service.name.toLowerCase();
+    if (serviceName.includes('hair') || serviceName.includes('cut') || serviceName.includes('styling')) return Scissors;
+    if (serviceName.includes('color') || serviceName.includes('highlight') || serviceName.includes('balayage')) return Palette;
+    if (serviceName.includes('facial') || serviceName.includes('skin')) return Sparkles;
+    if (serviceName.includes('bridal') || serviceName.includes('wedding')) return Crown;
+    if (serviceName.includes('spa') || serviceName.includes('massage')) return Heart;
+    if (serviceName.includes('express') || serviceName.includes('quick')) return Zap;
+    return Scissors; // Default icon
+  };
+
+  const hasUnassignedStylists = () => {
+    return peopleBookings.some(person => 
+      person.services.some(serviceData => !serviceData.stylist)
+    );
+  };
+
+  if (services.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold mb-2">No Services Available</h3>
+        <p className="text-muted-foreground">
+          Please contact the salon directly to make a booking.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h3 className="text-xl font-heading font-semibold text-foreground mb-2">
           Choose Services
@@ -202,11 +153,10 @@ export const EnhancedServiceSelection = ({
           Select services and assign stylists for each person.
         </p>
         <p className="text-sm text-red-500 mt-2">
-          * Every person must select at least one service to proceed
+          * Every person must select at least one service and assign a stylist to proceed
         </p>
       </div>
 
-      {/* Person Tabs (if multiple people) */}
       {bookingData.numberOfPeople > 1 && (
         <div className="flex flex-wrap gap-2 justify-center">
           {peopleBookings.map((person, index) => (
@@ -219,12 +169,11 @@ export const EnhancedServiceSelection = ({
             >
               <User className="w-4 h-4 mr-1" />
               {person.personName || `Person ${index + 1}`}
-              {person.services.length > 0 && (
+              {person.services.length > 0 ? (
                 <Badge className="ml-2 h-5 min-w-5 text-xs">
                   {person.services.length}
                 </Badge>
-              )}
-              {person.services.length === 0 && (
+              ) : (
                 <Badge variant="destructive" className="ml-2 h-5 min-w-5 text-xs">
                   No services
                 </Badge>
@@ -234,15 +183,14 @@ export const EnhancedServiceSelection = ({
         </div>
       )}
 
-      {/* Service Selection */}
       <div className="space-y-4">
         <h4 className="font-semibold text-foreground text-center">
           Services for {getCurrentPerson().personName || `Person ${activePersonIndex + 1}`}
         </h4>
         
         <div className="grid gap-3">
-          {availableServices.map((service, index) => {
-            const Icon = service.icon;
+          {services.map((service) => {
+            const Icon = getServiceIcon(service);
             const isSelected = getCurrentPerson().services.some(s => s.service.id === service.id);
             const selectedService = getCurrentPerson().services.find(s => s.service.id === service.id);
 
@@ -258,10 +206,7 @@ export const EnhancedServiceSelection = ({
                 onClick={() => toggleService(service, activePersonIndex)}
               >
                 <div className="flex items-start space-x-3">
-                  <Checkbox
-                    checked={isSelected}
-                    className="mt-1"
-                  />
+                  <Checkbox checked={isSelected} className="mt-1" />
                   
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                     isSelected ? 'bg-primary' : 'bg-primary/10'
@@ -278,9 +223,11 @@ export const EnhancedServiceSelection = ({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                      {service.description}
-                    </p>
+                    {service.description && (
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                        {service.description}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-primary font-semibold text-sm">{service.price}</span>
                       <div className="flex items-center space-x-1 text-muted-foreground">
@@ -291,46 +238,40 @@ export const EnhancedServiceSelection = ({
                   </div>
                 </div>
 
-                {/* Stylist Selection for Selected Service */}
                 {isSelected && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 pt-4 border-t border-border"
                     onClick={e => e.stopPropagation()}
-                    onTouchStart={e => e.stopPropagation()}
                   >
                     <div className="flex flex-col gap-3">
                       <Label className="text-sm font-medium text-foreground">
                         Choose Stylist: <span className="text-red-500">*</span>
                       </Label>
-                      <div className="relative" onClick={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
-                        <Select
-                          value={selectedService?.stylist?.id || ''}
-                          onValueChange={(value) => {
-                            const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
-                            updateStylist(serviceIndex, activePersonIndex, value);
-                          }}
-                        >
-                          <SelectTrigger className="w-full h-12 text-sm border-2 border-primary/20 hover:border-primary/40 focus:border-primary transition-colors">
-                            <SelectValue placeholder="Select stylist..." />
-                          </SelectTrigger>
-                          <SelectContent 
-                            className="max-h-60"
-                            onClick={e => e.stopPropagation()}
-                            onTouchStart={e => e.stopPropagation()}
-                          >
-                            {availableStylists.map((stylist) => (
-                              <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3 cursor-pointer">
-                                {stylist.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Select your preferred stylist or choose "Any Available Stylist" for the best match.
-                      </p>
+                      <Select
+                        value={selectedService?.stylist?.id || ''}
+                        onValueChange={(value) => {
+                          const serviceIndex = getCurrentPerson().services.findIndex(s => s.service.id === service.id);
+                          updateStylist(serviceIndex, activePersonIndex, value);
+                        }}
+                      >
+                        <SelectTrigger className="w-full h-12 text-sm">
+                          <SelectValue placeholder="Select stylist..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {availableStylists.map((stylist) => (
+                            <SelectItem key={stylist.id} value={stylist.id} className="text-sm py-3">
+                              <div className="flex flex-col">
+                                <span className="font-medium">{stylist.name}</span>
+                                {stylist.title && (
+                                  <span className="text-xs text-muted-foreground">{stylist.title}</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </motion.div>
                 )}
@@ -340,7 +281,18 @@ export const EnhancedServiceSelection = ({
         </div>
       </div>
 
-      {/* Summary */}
+      {hasUnassignedStylists() && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2 text-red-600">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">Action Required</span>
+          </div>
+          <p className="text-sm text-red-600 mt-1">
+            Please assign a stylist to all selected services before proceeding.
+          </p>
+        </div>
+      )}
+
       {getTotalServices() > 0 && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -384,19 +336,24 @@ export const EnhancedServiceSelection = ({
         </motion.div>
       )}
 
-      {/* Validation Status */}
       {bookingData.numberOfPeople > 1 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-foreground text-sm">Service Selection Status:</h4>
           {peopleBookings.map((person, index) => (
             <div key={index} className="flex items-center space-x-2 text-sm">
-              {person.services.length > 0 ? (
+              {person.services.length > 0 && person.services.every(s => s.stylist) ? (
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               ) : (
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
               )}
-              <span className={person.services.length > 0 ? 'text-green-600' : 'text-red-600'}>
-                {person.personName || `Person ${index + 1}`}: {person.services.length > 0 ? 'Services selected' : 'No services selected'}
+              <span className={person.services.length > 0 && person.services.every(s => s.stylist) ? 'text-green-600' : 'text-red-600'}>
+                {person.personName || `Person ${index + 1}`}: {
+                  person.services.length > 0 && person.services.every(s => s.stylist) 
+                    ? 'Ready to proceed' 
+                    : person.services.length === 0 
+                      ? 'No services selected'
+                      : 'Missing stylist assignment'
+                }
               </span>
             </div>
           ))}
