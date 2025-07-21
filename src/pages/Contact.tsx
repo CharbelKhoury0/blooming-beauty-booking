@@ -40,6 +40,22 @@ export default function Contact() {
   const [preselectedServiceId, setPreselectedServiceId] = useState<string>();
   const [services, setServices] = useState([]);
   const [stylists, setStylists] = useState([]);
+  const [mapsApiKey, setMapsApiKey] = useState<string>('');
+
+  useEffect(() => {
+    // Fetch Google Maps API key
+    const fetchMapsApiKey = async () => {
+      try {
+        const response = await supabase.functions.invoke('get-maps-api-key');
+        if (response.data?.apiKey) {
+          setMapsApiKey(response.data.apiKey);
+        }
+      } catch (error) {
+        console.error('Failed to fetch Maps API key:', error);
+      }
+    };
+    fetchMapsApiKey();
+  }, []);
 
   useEffect(() => {
     const fetchSalon = async () => {
@@ -115,7 +131,7 @@ export default function Contact() {
       })
     : [];
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
 
   return (
     <div className="min-h-screen bg-background">
@@ -306,8 +322,37 @@ export default function Contact() {
                     marker = `color:pink|${encodeURIComponent(salon.address)}`;
                     mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address)}`;
                   }
-                  if (!mapCenter || !GOOGLE_MAPS_API_KEY) return null; // No valid location or API key
-                  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=15&size=600x200&markers=${marker}&key=${GOOGLE_MAPS_API_KEY}`;
+                  if (!mapCenter) {
+                    return (
+                      <div className="bg-muted rounded-md h-[200px] flex items-center justify-center border border-border shadow-inner">
+                        <div className="text-center text-muted-foreground">
+                          <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">Map location not available</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // If no API key, show embed fallback or address link
+                  if (!mapsApiKey) {
+                    return (
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-muted rounded-md h-[200px] flex items-center justify-center border border-border shadow-inner hover:ring-2 hover:ring-primary transition"
+                        title="Open in Google Maps"
+                      >
+                        <div className="text-center text-muted-foreground hover:text-primary transition-colors">
+                          <MapPin className="w-8 h-8 mx-auto mb-2" />
+                          <p className="text-sm font-medium">View on Google Maps</p>
+                          <p className="text-xs opacity-75">Click to open directions</p>
+                        </div>
+                      </a>
+                    );
+                  }
+                  
+                  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=15&size=600x200&markers=${marker}&key=${mapsApiKey}`;
                   return (
                     <a
                       href={mapsUrl}
