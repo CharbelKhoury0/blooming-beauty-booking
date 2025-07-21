@@ -8,10 +8,11 @@ import { Salon, Testimonial } from '@/types/salon';
 import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { BookingModal } from '@/components/booking/BookingModal';
+import { X } from 'lucide-react';
 
 const serviceOptions = [
   'Hair Styling & Color',
@@ -160,7 +161,16 @@ const Testimonials = () => {
 
         {/* Testimonial Form Modal */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="w-full max-w-xl py-8">
+          <DialogContent className="w-full max-w-xl py-8 relative">
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-primary focus:outline-none"
+                aria-label="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </DialogClose>
             <DialogHeader>
               <DialogTitle>Write a Testimonial</DialogTitle>
             </DialogHeader>

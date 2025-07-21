@@ -9,6 +9,7 @@ import { Heart, Award, Users, Star, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { BookingModal } from '@/components/booking/BookingModal';
+import heroSalon from '@/assets/hero-salon.jpg';
 
 const ValueCard = ({ icon, title, description }) => (
   <Card className="border-none shadow-sm">
@@ -129,7 +130,7 @@ const About = () => {
             >
               <div className="rounded-2xl overflow-hidden shadow-xl">
                 <img 
-                  src={salon.hero_image_url || 'https://images.unsplash.com/photo-1470259078422-826894b933aa?auto=format&fit=crop&w=1740&q=80'} 
+                  src={heroSalon}
                   alt="Salon Interior" 
                   className="w-full h-[400px] object-cover"
                 />
