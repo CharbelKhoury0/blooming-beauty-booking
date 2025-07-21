@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/layout/Navbar';
@@ -23,6 +23,7 @@ const ValueCard = ({ icon, title, description }) => (
 
 const About = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -222,6 +223,7 @@ const About = () => {
                   </button>
                   <button 
                     className="border border-input bg-background px-6 py-3 rounded-md font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                    onClick={() => salon && navigate(`/${salon.slug}/services`)}
                   >
                     View Services
                   </button>
