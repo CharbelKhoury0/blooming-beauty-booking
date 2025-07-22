@@ -193,14 +193,14 @@ const Testimonials = () => {
 
         {/* Testimonial Form Modal */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="w-full max-w-xl py-8 relative">
+          <DialogContent className="w-full max-w-xl py-8 relative overflow-visible">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 z-50 rounded-full p-2 bg-background border border-border shadow-sm hover:bg-muted hover:border-primary/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="absolute -top-2 -right-2 z-[100] rounded-full p-2 bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border-2 border-background"
               aria-label="Close testimonial form"
             >
-              <X className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+              <X className="w-4 h-4" />
             </button>
             <DialogHeader>
               <DialogTitle className="pr-12">Write a Testimonial</DialogTitle>
