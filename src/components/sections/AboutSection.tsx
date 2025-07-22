@@ -24,8 +24,10 @@ const features = [
   },
 ];
 
+import { Salon } from '@/types/salon';
+
 interface AboutSectionProps {
-  salon?: any;
+  salon?: Salon;
 }
 
 export const AboutSection = ({ salon }: AboutSectionProps) => {

@@ -46,7 +46,7 @@ export const BookingMobileLayout = ({ children, title, subtitle }: BookingMobile
 };
 
 // Mobile-optimized card component
-export const MobileCard = ({ children, className = '', ...props }: { children: ReactNode; className?: string; [key: string]: any }) => (
+export const MobileCard = ({ children, className = '', ...props }: { children: ReactNode; className?: string; [key: string]: unknown }) => (
   <Card 
     className={`p-4 shadow-sm border-border/50 bg-card/80 backdrop-blur-sm ${className}`} 
     {...props}

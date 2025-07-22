@@ -45,8 +45,7 @@ export const EnhancedBookingSummary = ({
       setContactInfo((prev) => ({ ...prev, name: bookingData.peopleBookings[0].personName }));
     }
     // Only run when peopleBookings[0].personName changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingData.peopleBookings[0]?.personName]);
+  }, [bookingData.peopleBookings, contactInfo.name]);
 
   const validateEmail = (email: string) => {
     // Simple email regex
@@ -119,7 +118,7 @@ export const EnhancedBookingSummary = ({
   const getTotalDuration = () => {
     const allServices = bookingData.peopleBookings.flatMap(person => person.services);
     return allServices.reduce((total, { service }) => {
-      const duration = parseInt(service.duration.match(/\d+/)?.[0] || '60');
+      const duration = parseInt(service.duration.match(/\d+/)?.[0] || '0', 10);
       return total + duration;
     }, 0);
   };

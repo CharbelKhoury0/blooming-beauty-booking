@@ -10,7 +10,9 @@ import { Clock, User, AlertCircle } from 'lucide-react';
 import { Scissors, Palette, Sparkles, Crown, Heart, Zap } from 'lucide-react';
 import type { BookingData, PersonBookingData, Service, Stylist } from '@/types/booking';
 
-const serviceIcons: { [key: string]: any } = {
+import { LucideIcon } from 'lucide-react';
+
+const serviceIcons: { [key: string]: LucideIcon } = {
   'hair': Scissors,
   'color': Palette,
   'facial': Sparkles,
@@ -69,7 +71,7 @@ export const EnhancedServiceSelection = ({
         }
       }
     }
-  }, [preselectedServiceId, peopleBookings.length, services.length]);
+  }, [preselectedServiceId, peopleBookings, services, availableStylists, updateTotalPrice]);
 
   const toggleService = (service: Service, personIndex: number) => {
     const updated = [...peopleBookings];

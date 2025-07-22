@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Star, Award } from 'lucide-react';
 import heroImage from '@/assets/hero-salon.jpg';
 
+import { Salon } from '@/types/salon';
+
 interface HeroSectionProps {
   onBookingClick: () => void;
-  salon?: any;
+  salon?: Salon;
 }
 
 export const HeroSection = ({ onBookingClick, salon }: HeroSectionProps) => {

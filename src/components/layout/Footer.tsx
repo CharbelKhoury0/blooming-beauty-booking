@@ -14,9 +14,11 @@ import {
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
+import { Salon } from '@/types/salon';
+
 interface FooterProps {
   onBookingClick: () => void;
-  salon?: any;
+  salon?: Salon;
 }
 
 export const Footer = ({ salon, onBookingClick }: FooterProps) => {

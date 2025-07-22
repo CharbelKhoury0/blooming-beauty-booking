@@ -63,7 +63,7 @@ const Services = () => {
       setLoading(false);
     };
     fetchData();
-  }, [slug]);
+  }, [slug, location.search]);
 
   const handleBookingClick = (serviceId?: string) => {
     setPreselectedServiceId(serviceId);
@@ -110,7 +110,7 @@ const Services = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Explore Our Offerings</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map(service => {
-              const Icon = (service as any).icon;
+              const Icon = (service as Service & { icon: React.ElementType }).icon;
               return (
                 <div key={service.id} className="bg-card rounded-2xl shadow-xl border border-border p-8 flex flex-col items-center hover:shadow-2xl hover:-translate-y-1 transition-all duration-200">
                   <div className="mb-4">
@@ -132,7 +132,7 @@ const Services = () => {
         isOpen={isBookingModalOpen}
         onClose={handleCloseBooking}
         preselectedServiceId={preselectedServiceId}
-        services={services.map(s => ({ ...s, icon: (s as any).icon }))}
+        services={services}
         stylists={stylists.map(s => ({ ...s, availability: 'available' as const }))}
         salon={salon}
       />

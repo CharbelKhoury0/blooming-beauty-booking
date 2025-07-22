@@ -26,8 +26,8 @@ export function validateEmail(email: string): boolean {
 
 // Phone number validation (basic)
 export function validatePhone(phone: string): boolean {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s()-]/g, ''));
 }
 
 // Name validation
@@ -38,7 +38,7 @@ export function validateName(name: string): ValidationResult {
     errors.push('Name is required');
   } else if (name.length > 100) {
     errors.push('Name must be 100 characters or less');
-  } else if (!/^[a-zA-Z\s\-'\.]+$/.test(name)) {
+  } else if (!/^[a-zA-Z\s-'.]+$/.test(name)) {
     errors.push('Name contains invalid characters');
   }
   

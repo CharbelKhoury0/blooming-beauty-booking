@@ -5,7 +5,7 @@ import { Clock, Star } from 'lucide-react';
 import type { Service } from '@/components/sections/ServicesSection';
 
 interface ServiceCardProps {
-  service: any;
+  service: Service;
   onBookingClick?: (serviceId?: string) => void;
 }
 
