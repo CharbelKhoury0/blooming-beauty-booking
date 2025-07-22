@@ -29,8 +29,6 @@ const Testimonials = () => {
   const [salon, setSalon] = useState<Salon | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Modal state for testimonial form
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -196,19 +194,18 @@ const Testimonials = () => {
         {/* Testimonial Form Modal */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="w-full max-w-xl py-8 relative">
-            <DialogClose asChild>
-              <button
-                type="button"
-                className="absolute top-4 right-4 text-muted-foreground hover:text-primary focus:outline-none"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </DialogClose>
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="absolute top-4 right-4 z-50 rounded-full p-2 bg-background border border-border shadow-sm hover:bg-muted hover:border-primary/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              aria-label="Close testimonial form"
+            >
+              <X className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+            </button>
             <DialogHeader>
-              <DialogTitle>Write a Testimonial</DialogTitle>
+              <DialogTitle className="pr-12">Write a Testimonial</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4">
+            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4 mt-4">
               <Input
                 name="name"
                 value={form.name}
@@ -221,7 +218,7 @@ const Testimonials = () => {
                 name="service"
                 value={form.service}
                 onChange={handleFormChange}
-                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary"
+                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary bg-background"
                 required
               >
                 {serviceOptions.map(option => (
@@ -229,18 +226,18 @@ const Testimonials = () => {
                 ))}
               </select>
               <div className="flex items-center space-x-2">
-                <span className="text-sm">Rating:</span>
+                <span className="text-sm font-medium">Rating:</span>
                 {[1,2,3,4,5].map(star => (
                   <button
                     type="button"
                     key={star}
                     onClick={() => handleRatingChange(star)}
-                    className="focus:outline-none"
+                    className="focus:outline-none hover:scale-110 transition-transform"
                   >
                     <Star className={`w-6 h-6 transition-colors duration-150 ${
                       star <= form.rating
                         ? 'text-yellow-500 fill-yellow-500'
-                        : 'text-muted-foreground fill-none stroke-2'
+                        : 'text-muted-foreground fill-none stroke-2 hover:text-yellow-400'
                     }`} />
                   </button>
                 ))}
@@ -249,13 +246,13 @@ const Testimonials = () => {
                 name="text"
                 value={form.text}
                 onChange={handleFormChange}
-                placeholder="Your testimonial..."
+                placeholder="Share your experience with us..."
                 required
                 rows={4}
-                className="border border-primary/40 focus-visible:border-primary"
+                className="border border-primary/40 focus-visible:border-primary resize-none"
               />
-              <Button type="submit" variant="luxury" className="rounded-lg w-full" disabled={!salon} onClick={() => setIsFormOpen(true)}>
-                Submit
+              <Button type="submit" variant="luxury" className="rounded-lg w-full mt-6">
+                Submit Testimonial
               </Button>
             </form>
           </DialogContent>
