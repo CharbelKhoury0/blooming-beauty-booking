@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { BookingModal } from '@/components/booking/BookingModal';
 import { X } from 'lucide-react';
+import { validateTestimonial, sanitizeHtml } from '@/lib/security';
 
 const serviceOptions = [
   'Hair Styling & Color',
@@ -28,8 +29,6 @@ const Testimonials = () => {
   const [salon, setSalon] = useState<Salon | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Modal state for testimonial form
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -55,23 +54,56 @@ const Testimonials = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from('testimonials').insert([
-      {
+    
+    if (!salon) return;
+    
+    // Validate form data
+    const validation = validateTestimonial({
+      authorName: form.name.trim(),
+      text: form.text.trim(),
+      rating: form.rating
+    });
+    
+    if (!validation.isValid) {
+      toast.error(`Please fix the following errors: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
+    try {
+      // Sanitize form data
+      const sanitizedData = {
         salon_id: salon.id,
-        author_name: form.name,
-        service_name: form.service,
+        author_name: sanitizeHtml(form.name.trim()),
+        serviceName: sanitizeHtml(form.service.trim()), // Note: using serviceName to match schema
         rating: form.rating,
-        text: form.text,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        text: sanitizeHtml(form.text.trim()),
+      };
+      
+      const { error } = await supabase.from('testimonials').insert([sanitizedData]);
+      
+      if (error) {
+        console.error('Testimonial submission error:', error);
+        toast.error('Failed to submit testimonial. Please try again.');
+        return;
       }
-    ]);
-    if (!error) {
+      
       setIsFormOpen(false);
       setForm({ name: '', service: serviceOptions[0], rating: 5, text: '', location: '' });
       toast.success('Thank you for your testimonial!');
-    } else {
-      toast.error('Failed to submit testimonial. Please try again.');
+      
+      // Refresh testimonials
+      const { data: updatedTestimonials } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('salon_id', salon.id)
+        .order('created_at', { ascending: false });
+      
+      if (updatedTestimonials) {
+        setTestimonials(updatedTestimonials);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -161,20 +193,19 @@ const Testimonials = () => {
 
         {/* Testimonial Form Modal */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="w-full max-w-xl py-8 relative">
-            <DialogClose asChild>
-              <button
-                type="button"
-                className="absolute top-4 right-4 text-muted-foreground hover:text-primary focus:outline-none"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </DialogClose>
+          <DialogContent className="w-full max-w-xl py-8 relative overflow-visible">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="absolute -top-2 -right-2 z-[100] rounded-full p-2 bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border-2 border-background"
+              aria-label="Close testimonial form"
+            >
+              <X className="w-4 h-4" />
+            </button>
             <DialogHeader>
-              <DialogTitle>Write a Testimonial</DialogTitle>
+              <DialogTitle className="pr-12">Write a Testimonial</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4">
+            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 w-full px-2 sm:px-4 mt-4">
               <Input
                 name="name"
                 value={form.name}
@@ -187,7 +218,7 @@ const Testimonials = () => {
                 name="service"
                 value={form.service}
                 onChange={handleFormChange}
-                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary"
+                className="w-full border border-primary/40 rounded-md p-2 focus-visible:border-primary bg-background"
                 required
               >
                 {serviceOptions.map(option => (
@@ -195,18 +226,18 @@ const Testimonials = () => {
                 ))}
               </select>
               <div className="flex items-center space-x-2">
-                <span className="text-sm">Rating:</span>
+                <span className="text-sm font-medium">Rating:</span>
                 {[1,2,3,4,5].map(star => (
                   <button
                     type="button"
                     key={star}
                     onClick={() => handleRatingChange(star)}
-                    className="focus:outline-none"
+                    className="focus:outline-none hover:scale-110 transition-transform"
                   >
                     <Star className={`w-6 h-6 transition-colors duration-150 ${
                       star <= form.rating
                         ? 'text-yellow-500 fill-yellow-500'
-                        : 'text-muted-foreground fill-none stroke-2'
+                        : 'text-muted-foreground fill-none stroke-2 hover:text-yellow-400'
                     }`} />
                   </button>
                 ))}
@@ -215,13 +246,13 @@ const Testimonials = () => {
                 name="text"
                 value={form.text}
                 onChange={handleFormChange}
-                placeholder="Your testimonial..."
+                placeholder="Share your experience with us..."
                 required
                 rows={4}
-                className="border border-primary/40 focus-visible:border-primary"
+                className="border border-primary/40 focus-visible:border-primary resize-none"
               />
-              <Button type="submit" variant="luxury" className="rounded-lg w-full" disabled={!salon} onClick={() => setIsFormOpen(true)}>
-                Submit
+              <Button type="submit" variant="luxury" className="rounded-lg w-full mt-6">
+                Submit Testimonial
               </Button>
             </form>
           </DialogContent>

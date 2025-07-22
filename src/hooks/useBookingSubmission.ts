@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BookingData, BookingRequest } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
+import { validateBookingData, sanitizeHtml } from '@/lib/security';
 
 export const useBookingSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,17 +25,30 @@ export const useBookingSubmission = () => {
         throw new Error('Please select at least one service for each person');
       }
 
+      // Enhanced validation using security functions
+      const validationResult = validateBookingData({
+        customerName: bookingData.primaryContact.name,
+        customerEmail: bookingData.primaryContact.email,
+        customerPhone: bookingData.primaryContact.phone,
+        bookingDate: bookingData.date,
+        totalPrice: bookingData.totalPrice
+      });
+
+      if (!validationResult.isValid) {
+        throw new Error(`Validation failed: ${validationResult.errors.join(', ')}`);
+      }
+
       // Generate confirmation number
       const confirmationNumber = `BK${Date.now().toString().slice(-6)}${Math.random().toString(36).substring(2, 4).toUpperCase()}`;
 
-      // Prepare main booking data
+      // Prepare main booking data with sanitization
       const mainBookingData = {
         salon_id: bookingData.salon.id,
         confirmation_number: confirmationNumber,
-        customer_name: bookingData.primaryContact.name,
-        customer_email: bookingData.primaryContact.email,
-        customer_phone: bookingData.primaryContact.phone,
-        customer_notes: bookingData.primaryContact.notes || null,
+        customer_name: sanitizeHtml(bookingData.primaryContact.name.trim()),
+        customer_email: bookingData.primaryContact.email.trim().toLowerCase(),
+        customer_phone: bookingData.primaryContact.phone.trim(),
+        customer_notes: bookingData.primaryContact.notes ? sanitizeHtml(bookingData.primaryContact.notes.trim()) : null,
         booking_date: bookingData.date.split('T')[0],
         booking_time: bookingData.time,
         stylist_id: bookingData.peopleBookings[0]?.services[0]?.stylist?.id && bookingData.peopleBookings[0]?.services[0]?.stylist?.id !== 'any' ? bookingData.peopleBookings[0].services[0].stylist.id : null,
@@ -67,12 +81,12 @@ export const useBookingSubmission = () => {
       for (let i = 0; i < bookingData.peopleBookings.length; i++) {
         const person = bookingData.peopleBookings[i];
         
-        // Insert person
+        // Insert person with sanitization
         const { data: bookingPerson, error: personError } = await supabase
           .from('booking_people')
           .insert({
             booking_id: booking.id,
-            person_name: person.personName || `Person ${i + 1}`,
+            person_name: sanitizeHtml((person.personName || `Person ${i + 1}`).trim()),
             person_order: i + 1
           })
           .select()

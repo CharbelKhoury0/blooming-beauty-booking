@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { MapPin, Phone, Globe, Clock, Send, CheckCircle2, ChevronDown, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { BookingModal } from '@/components/booking/BookingModal';
+import { validateContactForm, sanitizeHtml } from '@/lib/security';
 
 // Helper to extract lat/lng from Google Maps embed URL
 function extractLatLngFromUrl(url: string): { lat: string; lng: string } | null {
@@ -100,11 +101,50 @@ export default function Contact() {
     e.preventDefault();
     if (!salon) return;
     
-    // Show success message
-    setSubmitted(true);
-    setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-    toast.success('Your message has been sent! We\'ll get back to you soon.');
-    setTimeout(() => setSubmitted(false), 3000);
+    // Validate form data
+    const validation = validateContactForm({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+      phone: form.phone.trim()
+    });
+    
+    if (!validation.isValid) {
+      toast.error(`Please fix the following errors: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
+    try {
+      // Sanitize form data before submission
+      const sanitizedData = {
+        salon_id: salon.id,
+        name: sanitizeHtml(form.name.trim()),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        subject: sanitizeHtml(form.subject.trim()),
+        message: sanitizeHtml(form.message.trim())
+      };
+      
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert([sanitizedData]);
+      
+      if (error) {
+        console.error('Contact form submission error:', error);
+        toast.error('Failed to send message. Please try again or contact us directly.');
+        return;
+      }
+      
+      // Show success message
+      setSubmitted(true);
+      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      toast.success('Your message has been sent! We\'ll get back to you soon.');
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    }
   };
 
   const handleBookingClick = (serviceId?: string) => {
