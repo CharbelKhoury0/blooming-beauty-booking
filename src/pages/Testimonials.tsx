@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { BookingModal } from '@/components/booking/BookingModal';
 import { X } from 'lucide-react';
+import { validateTestimonial, sanitizeHtml } from '@/lib/security';
 
 const serviceOptions = [
   'Hair Styling & Color',
@@ -55,23 +56,56 @@ const Testimonials = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from('testimonials').insert([
-      {
+    
+    if (!salon) return;
+    
+    // Validate form data
+    const validation = validateTestimonial({
+      authorName: form.name.trim(),
+      text: form.text.trim(),
+      rating: form.rating
+    });
+    
+    if (!validation.isValid) {
+      toast.error(`Please fix the following errors: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
+    try {
+      // Sanitize form data
+      const sanitizedData = {
         salon_id: salon.id,
-        author_name: form.name,
-        service_name: form.service,
+        author_name: sanitizeHtml(form.name.trim()),
+        serviceName: sanitizeHtml(form.service.trim()), // Note: using serviceName to match schema
         rating: form.rating,
-        text: form.text,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        text: sanitizeHtml(form.text.trim()),
+      };
+      
+      const { error } = await supabase.from('testimonials').insert([sanitizedData]);
+      
+      if (error) {
+        console.error('Testimonial submission error:', error);
+        toast.error('Failed to submit testimonial. Please try again.');
+        return;
       }
-    ]);
-    if (!error) {
+      
       setIsFormOpen(false);
       setForm({ name: '', service: serviceOptions[0], rating: 5, text: '', location: '' });
       toast.success('Thank you for your testimonial!');
-    } else {
-      toast.error('Failed to submit testimonial. Please try again.');
+      
+      // Refresh testimonials
+      const { data: updatedTestimonials } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('salon_id', salon.id)
+        .order('created_at', { ascending: false });
+      
+      if (updatedTestimonials) {
+        setTestimonials(updatedTestimonials);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
